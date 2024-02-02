@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from decouple import config
+import django_heroku
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -131,3 +132,5 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',  # This is for the project-wide 'static' folder
     # you can add more directories here if needed
 ]
+
+django_heroku.settings(locals())
