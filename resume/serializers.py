@@ -6,20 +6,40 @@ class AwardSerializer(serializers.ModelSerializer):
         model = Award
         fields = "__all__"
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('id', None)  # Remove 'id' from the response
+        return representation
+
 class EducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
-        fields = "__all__" 
+        fields = "__all__"
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('id', None)  # Remove 'id' from the response
+        return representation
 
 class ProfessionalSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfessionalSummary
         fields = "__all__"
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('id', None)  # Remove 'id' from the response
+        return representation
 
 class EmploymentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = EmploymentHistory
         fields = "__all__"
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('id', None)  # Remove 'id' from the response
+        return representation
 
 class ResumeSerializer(serializers.ModelSerializer):
     professional_summary = ProfessionalSummarySerializer()
