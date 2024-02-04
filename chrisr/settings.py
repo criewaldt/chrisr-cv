@@ -131,3 +131,5 @@ STATICFILES_DIRS = [
     # you can add more directories here if needed
 ]
 
+import django_heroku
+django_heroku.settings(locals())
