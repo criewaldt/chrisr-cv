@@ -1,19 +1,10 @@
 from django.db import models
 from bs4 import BeautifulSoup
-import html
 
-def html_to_text(json_data):
-    if isinstance(json_data, dict):
-        for key, value in json_data.items():
-            json_data[key] = html_to_text(value)
-    elif isinstance(json_data, list):
-        for index, item in enumerate(json_data):
-            json_data[index] = html_to_text(item)
-    elif isinstance(json_data, str):
-        if '<' in json_data and '>' in json_data:  # Simple check for HTML
-            soup = BeautifulSoup(json_data, 'html.parser')
-            return html.unescape(soup.get_text())
-    return json_data
+def strip_html(html_content):
+    soup = BeautifulSoup(html_content, "html.parser")
+    text = soup.get_text(separator=" ", strip=True)
+    return text
 
 class ProfessionalSummary(models.Model):
     summary_html = models.TextField()
@@ -21,7 +12,7 @@ class ProfessionalSummary(models.Model):
     
     @property
     def summary(self):
-        return html_to_text(self.summary)
+        return strip_html(self.summary_html)
 
     def __str__(self):
         return self.summary
@@ -43,7 +34,7 @@ class EmploymentHistory(models.Model):
 
     @property
     def description(self):
-        return html_to_text(self.description_html)
+        return strip_html(self.description_html)
 
     def __str__(self):
         return self.company_name
