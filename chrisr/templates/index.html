@@ -72,7 +72,7 @@
 			    <section class="resume-section summary-section mb-5">
 				    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Career Summary</h2>
 				    <div class="resume-section-content">
-					    <p class="mb-0">{{ resume.0.professional_summary.summary|safe }}</p>
+					    <p class="mb-0">{{ resume.0.professional_summary.summary_html|safe }}</p>
 				    </div>
 			    </section><!--//summary-section-->
 			    <div class="row">
@@ -96,7 +96,7 @@
 												</div>
 											</div><!--//resume-timeline-item-header-->
 											<div class="resume-timeline-item-desc">
-												<p>{{ job.description|safe }}</p>
+												<p>{{ job.description_html|safe }}</p>
 											</div><!--//resume-timeline-item-desc-->
 
 										</article><!--//resume-timeline-item-->
