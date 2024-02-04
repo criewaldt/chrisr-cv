@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from decouple import config
-import django_heroku
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,7 +34,6 @@ INSTALLED_APPS = [
 
     'chrisr',
     'resume',
-    'api',
     
     'rest_framework',
 ]
@@ -106,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -133,4 +131,3 @@ STATICFILES_DIRS = [
     # you can add more directories here if needed
 ]
 
-django_heroku.settings(locals())
