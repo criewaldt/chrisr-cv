@@ -121,15 +121,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Directory where Django will collect all static files for deployment
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# This is an optional setting that specifies additional directories
-# Django will search for static files, in addition to each app's 'static' folder.
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # This is for the project-wide 'static' folder
-    # you can add more directories here if needed
-]
-
 import django_heroku
 django_heroku.settings(locals())
