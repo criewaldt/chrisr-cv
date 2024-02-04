@@ -17,7 +17,7 @@ if os.path.exists(ENV_PATH):
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', config('DJANGO_SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['chrisr-resume-1f6a2601c7fd.herokuapp.com', 'chrisriewaldt.com', '127.0.0.1', 'www.chrisriewaldt.com']
 
@@ -116,10 +116,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+# STATIC_ROOT = BASE_DIR / 'staticfiles/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
