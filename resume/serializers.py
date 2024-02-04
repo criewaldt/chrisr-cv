@@ -24,7 +24,7 @@ class EducationSerializer(serializers.ModelSerializer):
 class ProfessionalSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfessionalSummary
-        fields = "__all__"
+        fields = ['summary', 'highlights']
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -34,7 +34,7 @@ class ProfessionalSummarySerializer(serializers.ModelSerializer):
 class EmploymentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = EmploymentHistory
-        fields = "__all__"
+        fields = ['job_title', 'company_name', 'location', 'start_date', 'end_date', 'description', 'is_current'] 
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
