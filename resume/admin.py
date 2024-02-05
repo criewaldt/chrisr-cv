@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Award, Resume, ProfessionalSummary, EmploymentHistory, Education
+from .models import Award, Resume, ProfessionalSummary, EmploymentHistory, Education, Keyword
 
 # Optional: Custom admin interfaces
 class ProfessionalSummaryAdmin(admin.ModelAdmin):
@@ -18,9 +18,13 @@ class AwardAdmin(admin.ModelAdmin):
 class EducationAdmin(admin.ModelAdmin):
     list_display = ('degree', 'school', 'time')
 
+class KeywordAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category')
+
 # Register your models here
 admin.site.register(ProfessionalSummary, ProfessionalSummaryAdmin)
 admin.site.register(EmploymentHistory, EmploymentHistoryAdmin)
 admin.site.register(Resume, ResumeAdmin)
 admin.site.register(Award, AwardAdmin)
 admin.site.register(Education, EducationAdmin)
+admin.site.register(Keyword, KeywordAdmin)

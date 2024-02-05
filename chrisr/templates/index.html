@@ -50,21 +50,21 @@
 				    <div class="col">
 					    <div class="row p-4 justify-content-center justify-content-md-between">
 						    <div class="primary-info col-auto">
-							    <h1 class="name mt-0 mb-1 text-white text-uppercase text-uppercase">Christopher Riewaldt</h1>
-							    <div class="title mb-3">Software Developer</div>
+							    <h1 class="name mt-0 mb-1 text-white text-uppercase text-uppercase">{{resume.0.name}}</h1>
+							    <div class="title mb-3">{{resume.0.desired_title}}</div>
 							    <ul class="list-unstyled">
-								    <li class="mb-2"><a class="text-link" href="mailto:criewaldt@gmail.com"><i class="far fa-envelope fa-fw me-2" data-fa-transform="grow-3"></i>criewaldt@gmail.com</a></li>
-								    <li><a class="text-link" href="tel:+13478145715"><i class="fas fa-mobile-alt fa-fw me-2" data-fa-transform="grow-6"></i>(347) 814 5715</a></li>
+								    <li class="mb-2"><a class="text-link" href="mailto:criewaldt@gmail.com"><i class="far fa-envelope fa-fw me-2" data-fa-transform="grow-3"></i>{{resume.0.email}}</a></li>
+								    <li><a class="text-link" href="tel:+13478145715"><i class="fas fa-mobile-alt fa-fw me-2" data-fa-transform="grow-6"></i>{{resume.0.phone}}</a></li>
 							    </ul>
 						    </div><!--//primary-info-->
 						    <div class="secondary-info col-auto mt-2">
 							    <ul class="resume-social list-unstyled">
-					                <li class="mb-3"><a class="text-link" href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b"><span class="fa-container text-center me-2"><i class="fab fa-linkedin-in fa-fw"></i></span>linkedin.com/chrisriewaldt</a></li>
-					                <li class="mb-3"><a class="text-link" href="https://github.com/criewaldt"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>github.com/criewaldt</a></li>
+					                <li class="mb-3"><a class="text-link" href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b"><span class="fa-container text-center me-2"><i class="fab fa-linkedin-in fa-fw"></i></span>LinkedIn.com/ChrisRiewaldt</a></li>
+					                <li class="mb-3"><a class="text-link" href="https://github.com/criewaldt"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>GitHub.com/CRiewaldt</a></li>
 								</ul>
 								<br>
 								<ul class="resume-social list-unstyled">
-									<li class="mb-3"><a class="text-link" href="https://github.com/criewaldt/chrisr-cv"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>Website Code</a></li>
+									<li class="mb-3"><a class="text-link" href="https://github.com/criewaldt/chrisr-cv"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>Dynamic DRF CV Website: GitHub</a></li>
 								</ul>
 						    </div><!--//secondary-info-->
 					    </div><!--//row-->
@@ -117,36 +117,33 @@
 						        <div class="resume-skill-item">
 							        <h4 class="resume-skills-cat font-weight-bold">Web Development</h4>
 									<ul class="list-inline">
-							            <li class="list-inline-item"><span class="badge badge-light">Django</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Django REST Framework</span></li>
-										<li class="list-inline-item"><span class="badge badge-light">Jira</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">ORM</span></li>
-										<li class="list-inline-item"><span class="badge badge-light">Postgres</span></li>
-										<li class="list-inline-item"><span class="badge badge-light">AWS</span></li>
+										{% for keyword in resume.0.keywords.all %}
+											{% if keyword.category == 'web' %}
+												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
+											{% endif %}
+										{% endfor %}
 						            </ul>
 						        </div><!--//resume-skill-item-->
 						        
 						        <div class="resume-skill-item">
 									<h4 class="resume-skills-cat font-weight-bold">Languages</h4>
 						            <ul class="list-inline">
-							            <li class="list-inline-item"><span class="badge badge-light">Python</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Javascript</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">HTML/CSS</span></li>
-										<li class="list-inline-item"><span class="badge badge-light">SQL</span></li>
+										{% for keyword in resume.0.keywords.all %}
+											{% if keyword.category == 'language' %}
+												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
+											{% endif %}
+										{% endfor %}
 						            </ul>
 						        </div><!--//resume-skill-item-->
 						        
 						        <div class="resume-skill-item">
 						            <h4 class="resume-skills-cat font-weight-bold">Others</h4>
 						            <ul class="list-inline">
-										<li class="list-inline-item"><span class="badge badge-light">GitHub</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Heroku</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Data Migration</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Code Review</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Agile</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Automated & Unit Testing</span></li>
-							            <li class="list-inline-item"><span class="badge badge-light">Scrum</span></li>
-										<li class="list-inline-item"><span class="badge badge-light">SDLC</span></li>
+										{% for keyword in resume.0.keywords.all %}
+											{% if keyword.category == 'other' %}
+												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
+											{% endif %}
+										{% endfor %}
 						            </ul>
 						        </div><!--//resume-skill-item-->
 						    </div><!--resume-section-content-->

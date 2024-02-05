@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Resume, ProfessionalSummary, EmploymentHistory, Award, Education
+from .models import Resume, ProfessionalSummary, EmploymentHistory, Award, Education, Keyword
 
 class AwardSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,6 +14,16 @@ class AwardSerializer(serializers.ModelSerializer):
 class EducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Education
+        fields = "__all__"
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('id', None)  # Remove 'id' from the response
+        return representation
+
+class KeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Keyword
         fields = "__all__"
     
     def to_representation(self, instance):
@@ -46,10 +56,11 @@ class ResumeSerializer(serializers.ModelSerializer):
     employment_history = EmploymentHistorySerializer(read_only=True, many=True)
     education = EducationSerializer(many=True, read_only=True)
     awards = AwardSerializer(many=True, read_only=True)
+    keywords = KeywordSerializer(many=True, read_only=True)
 
     class Meta:
         model = Resume
-        fields = ['name', 'email', 'phone', 'desired_title', 'current_title', 'professional_summary', 'employment_history', 'education', 'awards']
+        fields = ['name', 'email', 'phone', 'desired_title', 'current_title', 'professional_summary', 'employment_history', 'education', 'awards', 'keywords']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

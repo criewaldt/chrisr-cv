@@ -46,6 +46,13 @@ class Education(models.Model):
 
     def __str__(self):
         return self.degree
+    
+class Keyword(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.name
 
 class Resume(models.Model):
     name = models.CharField(max_length=100)
@@ -57,6 +64,9 @@ class Resume(models.Model):
     employment_history = models.ManyToManyField(EmploymentHistory)
     awards = models.ManyToManyField(Award)
     education = models.ManyToManyField(Education)
+    keywords = models.ManyToManyField(Keyword)
 
     def __str__(self):
         return self.name
+
+
