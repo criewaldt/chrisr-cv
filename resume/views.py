@@ -6,6 +6,7 @@ from .models import Resume
 from .serializers import ResumeSerializer
 from .permissions import IsAdminOrReadOnly
 
+from django.http import JsonResponse
 
 
 class ResumeViewSet(viewsets.ModelViewSet):
@@ -21,7 +22,20 @@ class ResumeViewSet(viewsets.ModelViewSet):
             return render(request, 'index.html', {'resume': queryset})
 
 
-from django.views.generic import FormView
-from resume.forms import EmailForm  # Make sure to create a form that includes email, num1, and num2 fields
 from .tasks import send_celery_email
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
+def SendEmailView(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        num1 = int(request.POST.get('num1', 0))
+        num2 = int(request.POST.get('num2', 0))
+
+        print(email, num1, num2)
+        
+        send_celery_email.delay(email, num1, num2)
+        
+        return JsonResponse({"status": "success", "message": "Email task submitted successfully"})
+    else:
+        return HttpResponseRedirect('/')

@@ -23,6 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', ResumeViewSet.as_view({'get':'list'}), name='resume_viewset'), 
-    path('send-email/', SendEmailView.as_view(), name='send-email'),
+    path('send-email/', SendEmailView, name='send-email'),
     
 ]
