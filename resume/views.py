@@ -6,6 +6,8 @@ from .models import Resume
 from .serializers import ResumeSerializer
 from .permissions import IsAdminOrReadOnly
 
+
+
 class ResumeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = ResumeSerializer
@@ -17,3 +19,9 @@ class ResumeViewSet(viewsets.ModelViewSet):
         else:
             queryset = self.filter_queryset(self.get_queryset())
             return render(request, 'index.html', {'resume': queryset})
+
+
+from django.views.generic import FormView
+from resume.forms import EmailForm  # Make sure to create a form that includes email, num1, and num2 fields
+from .tasks import send_celery_email
+

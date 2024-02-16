@@ -17,7 +17,7 @@ if os.path.exists(ENV_PATH):
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', config('DJANGO_SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['chrisr-resume-1f6a2601c7fd.herokuapp.com', 'chrisriewaldt.com', '127.0.0.1', 'www.chrisriewaldt.com']
 
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'resume',
     
     'rest_framework',
+
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +128,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 from chrisr.settings import TIME_ZONE
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ.get('GMAIL_USER', 'criewaldt@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PW', 'qxhckdzggppoomdz')
 
 #CELERY/REDIS
 CELERY_BROKER_URL = os.environ.get('REDIS_URL')

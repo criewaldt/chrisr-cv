@@ -207,6 +207,7 @@
 					<div class="button-group">
 						<a type="button" href="?json" class="btn btn-primary">JSON</a>
 						<a type="button" href="{% static 'ChrisR_Resume.pdf' " %}" class="btn btn-primary">Download PDF</a>
+						<a type="button" href="#" id="openEmailModal" class="btn btn-primary">Celery Task Email</a>
 					</div>
 					<button type="button" class="btn btn-primary" data-dismiss="modal">HTML</button>
 				</div>
@@ -215,12 +216,97 @@
 		</div>
 	</div>
 
+	<!-- Email The Modal -->
+	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="emailModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+			<h5 class="modal-title" id="emailModalLabel">Send Email via Celery Task</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			</div>
+			<div class="modal-body">
+			<!-- Form -->
+			<form id="emailForm">
+				{% csrf_token %}
+				<div class="form-group">
+					<p>Enter your email and two numbers: Django + Celery will send you a copy of my CV plus the SUM(Num1, Num2)</p>
+				<label for="email">Email address</label>
+				<input type="email" class="form-control" id="email" name="email" required>
+				</div>
+				<div class="form-group">
+				<label for="num1">Number 1</label>
+				<input type="number" class="form-control" id="num1" name="num1" required>
+				</div>
+				<div class="form-group">
+				<label for="num2">Number 2</label>
+				<input type="number" class="form-control" id="num2" name="num2" required>
+				</div>
+			</form>
+			</div>
+			<div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary" onclick="submitEmailForm()">Send Email</button>
+			</div>
+		</div>
+		</div>
+	</div>
+
+
+
 	<!-- Script to trigger modal on page load -->
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$('#exampleModalCenter').modal('show');
+
+			$("#openEmailModal").click(function(){
+				$('#emailModal').modal('show');
+			});
+
+			
+
 		});
+
+
+
+		
+		
+
+
+
+
+
+		
 	</script>
+
+	<script>
+		// REST
+		function submitEmailForm() {
+			const form = document.getElementById('emailForm');
+			const formData = new FormData(form);
+
+			fetch('/send-email/', {
+				method: 'POST',
+				body: formData  // FormData will include the CSRF token
+			})
+			.then(response => {
+				if(response.ok) {
+				return response.json();
+				}
+				throw new Error('Network response was not ok.');
+			})
+			.then(data => {
+				console.log('Success:', data);
+				$('#emailModal').modal('hide'); // Hide the modal on success
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+			});
+			}
+	</script>
+
+	
 
     
 

@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from resume.views import ResumeViewSet
+from resume.views import ResumeViewSet, SendEmailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', ResumeViewSet.as_view({'get':'list'}), name='resume_viewset'), 
+    path('send-email/', SendEmailView.as_view(), name='send-email'),
     
 ]
