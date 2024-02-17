@@ -201,15 +201,37 @@
 					
 				</div>
 				<div class="modal-body">
-					How would you like to see my CV?
+					How would you like to view my CV?
 				</div>
 				<div class="modal-footer">
 					<div class="button-group">
-						<a type="button" href="?json" class="btn btn-primary">JSON</a>
-						<a type="button" href="{% static 'ChrisR_Resume.pdf' " %}" class="btn btn-primary">Download PDF</a>
-						<a type="button" href="#" id="openEmailModal" class="btn btn-primary">Celery Task Email</a>
+						<a type="button" href="?json" class="btn btn-secondary m-1">JSON</a>
+						<!-- <a type="button" href="{% static 'ChrisR_Resume.pdf' " %}" class="btn btn-primary">Download PDF</a> -->
+						<a type="button" href="#" id="openEmailModal" class="btn btn-primary  m-1">Download PDF via Celery Task Email</a>
+					
+						<button type="button" class="btn btn-secondary m-1" data-dismiss="modal">HTML</button>
 					</div>
-					<button type="button" class="btn btn-primary" data-dismiss="modal">HTML</button>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalTitle" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="successModalLongTitle">Success!</h5>
+					
+				</div>
+				<div class="modal-body">
+					<strong>Success!</strong> Please check: <strong id="sentEmail"></strong>
+				</div>
+				<div class="modal-footer">
+					<div class="button-group">
+						<button type="button" class="btn btn-secondary m-1" data-dismiss="modal">Done</button>
+					</div>
 				</div>
 				
 			</div>
@@ -221,7 +243,7 @@
 		<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-			<h5 class="modal-title" id="emailModalLabel">Send Email via Celery Task</h5>
+			<h5 class="modal-title" id="emailModalLabel">Download via Celery Task Email</h5>
 			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				<span aria-hidden="true">&times;</span>
 			</button>
@@ -261,6 +283,7 @@
 			$('#exampleModalCenter').modal('show');
 
 			$("#openEmailModal").click(function(){
+				$('#exampleModalCenter').modal('hide');
 				$('#emailModal').modal('show');
 			});
 
@@ -299,6 +322,8 @@
 			.then(data => {
 				console.log('Success:', data);
 				$('#emailModal').modal('hide'); // Hide the modal on success
+				$('#sentEmail').html(formData.get('email'));
+				$('#successModal').modal('show');
 			})
 			.catch((error) => {
 				console.error('Error:', error);
