@@ -4,7 +4,8 @@ from django.conf import settings
 import os
 @shared_task
 def send_celery_email(email, num1, num2):
-    cv_path = os.path.join(settings.STATIC_ROOT, 'ChrisR_Resume.pdf')    
+    cv_path = os.path.join(settings.BASE_DIR, 'static', 'ChrisR_Resume.pdf')
+        
     sum = num1 + num2
     subject = 'Message from ChrisRiewaldt.com - My CV via Celery Task'
     message = f'The sum of {num1} and {num2} is {sum}. Also, please see my CV attached. -Chris Riewaldt'
