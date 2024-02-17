@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 asgiref = "==3.7.2"
 beautifulsoup4 = "==4.12.3"
-django = "==5.0.1"
+django = "*"
 django-filter = "==23.5"
 djangorestframework = "==3.14.0"
 gunicorn = "==21.2.0"
