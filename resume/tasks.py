@@ -7,8 +7,8 @@ def send_celery_email(email, num1, num2):
     cv_path = os.path.join(settings.BASE_DIR, 'static', 'ChrisR_Resume.pdf')
         
     sum = num1 + num2
-    subject = 'Message from ChrisRiewaldt.com - My CV via Celery Task'
-    message = f'The sum of {num1} and {num2} is {sum}. Also, please see my CV attached. -Chris Riewaldt'
+    subject = 'Message from ChrisRiewaldt.com - Your Sum Calculation & My CV via Celery Task'
+    message = f'ChrisRiewaldt.com celery task said: the sum of {num1} and {num2} equals {sum}. Also, please see his CV attached. \n\nThanks,\n-Chris Riewaldt'
     email = EmailMessage(
         subject,
         message,
