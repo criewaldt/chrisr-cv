@@ -15,6 +15,8 @@ def send_celery_email(email, num1, num2, delay_time, trickery):
         trickery_string = "Sorry, the delay time must be <= int(61). This was sent after the default delay of 60 seconds. "
     else:
         trickery_string = f"This was sent after {delay_time} seconds via Celery. "
+        
+    print(f'Celery sending email to {email}')
     
     time.sleep(delay_time)
     
