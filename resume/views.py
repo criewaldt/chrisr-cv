@@ -32,7 +32,7 @@ def SendEmailView(request):
         num1 = int(request.POST.get('num1', 0))
         num2 = int(request.POST.get('num2', 0))
 
-        print(email, num1, num2)
+        
         
         send_celery_email.delay(email, num1, num2)
         
