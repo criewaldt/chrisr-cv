@@ -35,10 +35,14 @@ def clean_delay_time(t):
 def SendEmailView(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        num1 = int(request.POST.get('num1', 0))
-        num2 = int(request.POST.get('num2', 0))
+        num1 = int(request.POST.get('num1', 1336))
+        num2 = int(request.POST.get('num2', 1))
         delay_time = int(request.POST.get('delay', 60))
-
+        
+        if not isinstance(num1, int) or not isinstance(num2, int):
+            num1 = 1336
+            num2 = 1
+        
         print(f'Sending celery email with {num1}, {num2}, and delay of {delay_time}')
         
         clean_time, trickery = clean_delay_time(delay_time)
