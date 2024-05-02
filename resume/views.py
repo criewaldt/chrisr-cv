@@ -35,8 +35,8 @@ def clean_delay_time(t):
 def SendEmailView(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        num1 = int(request.POST.get('num1', 1336))
-        num2 = int(request.POST.get('num2', 1))
+        num1 = request.POST.get('num1', 1336)
+        num2 = request.POST.get('num2', 1)
         delay_time = int(request.POST.get('delay', 60))
         
         if not isinstance(num1, int) or not isinstance(num2, int):
