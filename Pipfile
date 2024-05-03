@@ -21,6 +21,7 @@ python-dotenv = "*"
 django-celery-results = "*"
 redis = "*"
 django-db = "*"
+docx-mailmerge = "*"
 
 [dev-packages]
 

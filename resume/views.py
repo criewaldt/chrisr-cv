@@ -7,7 +7,7 @@ from .serializers import ResumeSerializer
 from .permissions import IsAdminOrReadOnly
 
 from django.http import JsonResponse
-
+from .merge_fields import generate_cv
 
 class ResumeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
