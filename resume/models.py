@@ -31,6 +31,7 @@ class EmploymentHistory(models.Model):
     end_date = models.DateField(null=True, blank=True)
     description_html = models.TextField(blank=True)
     is_current = models.BooleanField(default=False)
+    sort_order = models.IntegerField(blank=False, default=0)
 
     @property
     def description(self):

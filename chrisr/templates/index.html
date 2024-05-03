@@ -86,7 +86,9 @@
 						    <div class="resume-section-content">
 							    <div class="resume-timeline position-relative">
 
-									{% for job in resume.0.employment_history.all %}
+									{% load sort_tags %}
+
+									{% for job in resume.0.employment_history.all|sort_by_int:"sort_order" %}
 									
 										<article class="resume-timeline-item position-relative pb-5">
 											
