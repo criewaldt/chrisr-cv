@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', config('DJANGO_SECRET_KEY'))
 DEBUG = True
 
 ALLOWED_HOSTS = ['chrisr-resume-1f6a2601c7fd.herokuapp.com', 
-                 'chrisriewaldt.com', 'www.chrisriewaldt.com']
+                 'chrisriewaldt.com', 'www.chrisriewaldt.com', 'chris-riewaldt-f670c31b76e3.herokuapp.com',]
 if DEBUG == True:
     ALLOWED_HOSTS.append('127.0.0.1')
 
