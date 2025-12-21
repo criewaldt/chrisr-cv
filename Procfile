@@ -1,1 +1,0 @@
-web: gunicorn chrisr.chrisr.wsgi --log-file -
