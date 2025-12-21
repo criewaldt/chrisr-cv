@@ -1,0 +1,15 @@
+<!-- templates/upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload JSON File</title>
+</head>
+<body>
+    <h1>Upload JSON File</h1>
+    <form action="{% url 'upload_resume_data' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" accept="application/json" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
