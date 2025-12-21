@@ -1,1 +1,1 @@
-web: gunicorn chrisr.wsgi --log-file -
+web: gunicorn chrisr.chrisr.wsgi --log-file -
