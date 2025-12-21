@@ -27,11 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', config('DJANGO_SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', config('DEBUG'))
-if DEBUG == 'True':
-    DEBUG = True
-else:
-    DEBUG = False
+# DEBUG = os.environ.get('DEBUG', config('DEBUG'))
+DEBUG = False
 
 ALLOWED_HOSTS = ['chrisr-resume-1f6a2601c7fd.herokuapp.com', 
                  'chrisriewaldt.com', 'www.chrisriewaldt.com', 'chris-riewaldt-f670c31b76e3.herokuapp.com',]
