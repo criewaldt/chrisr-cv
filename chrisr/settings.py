@@ -95,8 +95,8 @@ WSGI_APPLICATION = 'chrisr.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.parse(
-        os.environ.get('DATABASE_URL'),
+    'default': dj_database_url.config(
+        env='DATABASE_URL',
         conn_max_age=600,
         ssl_require=True,
         engine='django_cockroachdb',

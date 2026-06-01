@@ -165,6 +165,13 @@
     .compass-name { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
     .compass-dist { font-size: 0.82rem; color: #888; }
 
+    .compass-live {
+      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #4ade80;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .compass-live.active { opacity: 1; }
+
     .compass-close {
       position: absolute; top: 12px; right: 16px;
       background: transparent; border: 1px solid #2a2a2a; color: #555;
@@ -211,6 +218,7 @@
       <div class="compass-info">
         <div class="compass-name" id="compass-name"></div>
         <div class="compass-dist" id="compass-dist"></div>
+        <div class="compass-live" id="compass-live">⬤ live</div>
       </div>
       <button class="compass-close" onclick="hideCompass()">✕</button>
     </div>
@@ -336,11 +344,70 @@
   }
 
   // ── Compass ───────────────────────────────────────────────
-  function showCompass(key) {
+  let currentBearing  = null;
+  let deviceHeading   = null;
+  let smoothedHeading = null;
+  let orientationLive = false;
+  let orientationBound = false;
+
+  function rawHeadingFromEvent(e) {
+    // iOS: webkitCompassHeading is already true-north clockwise
+    if (e.webkitCompassHeading != null) return e.webkitCompassHeading;
+    // Android absolute: alpha is CCW from north → convert
+    if (e.alpha != null) return (360 - e.alpha) % 360;
+    return null;
+  }
+
+  function handleOrientation(e) {
+    const raw = rawHeadingFromEvent(e);
+    if (raw == null) return;
+
+    // Low-pass filter to smooth jitter, handles 359°→1° wrap-around
+    if (smoothedHeading == null) {
+      smoothedHeading = raw;
+    } else {
+      let diff = raw - smoothedHeading;
+      if (diff > 180)  diff -= 360;
+      if (diff < -180) diff += 360;
+      smoothedHeading = ((smoothedHeading + diff * 0.25) + 360) % 360;
+    }
+    deviceHeading = smoothedHeading;
+
+    if (orientationLive && currentBearing !== null) {
+      const needle = document.getElementById('compass-needle');
+      needle.style.transform = `rotate(${currentBearing - deviceHeading}deg)`;
+    }
+  }
+
+  function bindOrientation() {
+    if (orientationBound) return;
+    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+    window.addEventListener('deviceorientation', handleOrientation, true);
+    orientationBound = true;
+  }
+
+  async function startOrientationTracking() {
+    // iOS 13+ requires a user-gesture permission request
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        const result = await DeviceOrientationEvent.requestPermission();
+        if (result !== 'granted') return false;
+      } catch (_) { return false; }
+    }
+    bindOrientation();
+    return true;
+  }
+
+  async function showCompass(key) {
     const u = userData[String(key)];
     if (!u) return;
 
+    orientationLive = false;
+    smoothedHeading = null;
+
     document.getElementById('compass-name').textContent = u.name;
+    document.getElementById('compass-live').classList.remove('active');
 
     const needle = document.getElementById('compass-needle');
 
@@ -349,22 +416,35 @@
       needle.style.transition = 'none';
       needle.style.transform  = 'rotate(0deg)';
     } else {
-      const deg  = getBearing(myLat, myLng, u.lat, u.lng);
-      const dist = getDistance(myLat, myLng, u.lat, u.lng);
-      document.getElementById('compass-dist').textContent = dist;
+      currentBearing = getBearing(myLat, myLng, u.lat, u.lng);
+      document.getElementById('compass-dist').textContent = getDistance(myLat, myLng, u.lat, u.lng);
 
-      // reset instantly, then animate: 2 full spins + settle on bearing
+      // Spin animation: 2 full rotations then settle on bearing
       needle.style.transition = 'none';
       needle.style.transform  = 'rotate(0deg)';
-      needle.offsetHeight; // force reflow
+      needle.offsetHeight;
       needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
-      needle.style.transform  = `rotate(${deg + 720}deg)`;
+      needle.style.transform  = `rotate(${currentBearing + 720}deg)`;
+
+      // After spin, hand off to live orientation
+      setTimeout(async () => {
+        if (document.getElementById('compass-panel').classList.contains('visible')) {
+          const ok = await startOrientationTracking();
+          if (ok) {
+            needle.style.transition = 'transform 0.1s linear';
+            orientationLive = true;
+            document.getElementById('compass-live').classList.add('active');
+          }
+        }
+      }, 1600);
     }
 
     document.getElementById('compass-panel').classList.add('visible');
   }
 
   function hideCompass() {
+    orientationLive = false;
+    document.getElementById('compass-live').classList.remove('active');
     document.getElementById('compass-panel').classList.remove('visible');
   }
 
