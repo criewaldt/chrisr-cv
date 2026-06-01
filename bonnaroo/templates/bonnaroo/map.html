@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Bonnaroo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .layout { display: flex; flex-direction: column; height: 100dvh; }
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px;
+      background: #1a1a1a; border-bottom: 1px solid #2a2a2a; flex-shrink: 0;
+    }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-left span { font-size: 1.2rem; }
+    .header-left h1 {
+      font-size: 1rem; font-weight: 700;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .header-right img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #333; }
+    .user-name { font-size: 0.8rem; color: #ccc; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-logout {
+      background: transparent; border: 1px solid #333; color: #888;
+      padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; text-decoration: none;
+    }
+
+    /* ── Map ── */
+    #map { flex: 1; min-height: 0; }
+
+    /* ── Bottom panel ── */
+    .bottom-panel {
+      flex-shrink: 0; background: #1a1a1a; border-top: 1px solid #2a2a2a;
+      max-height: 38vh; display: flex; flex-direction: column;
+    }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 8px; flex-shrink: 0; border-bottom: 1px solid #222;
+    }
+    .panel-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #666; }
+    .status-pill { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #666; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #666; flex-shrink: 0; }
+    .status-dot.active { background: #4ade80; }
+    .status-dot.error  { background: #f87171; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th {
+      position: sticky; top: 0; background: #1f1f1f;
+      padding: 6px 12px; text-align: left;
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #555; border-bottom: 1px solid #2a2a2a;
+    }
+    tbody tr {
+      border-bottom: 1px solid #222; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: background 0.1s;
+    }
+    tbody tr:active { background: #222; }
+    tbody tr.is-me { background: rgba(255,107,53,0.06); }
+    td { padding: 9px 12px; vertical-align: middle; white-space: nowrap; }
+    .td-user { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #333; flex-shrink: 0; object-fit: cover; }
+    .avatar-initials {
+      width: 32px; height: 32px; border-radius: 50%; background: #333; border: 2px solid #444;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 600; color: #ccc; flex-shrink: 0;
+    }
+    .is-me .avatar, .is-me .avatar-initials { border-color: #ff6b35; }
+    .row-name { font-weight: 500; color: #e0e0e0; }
+    .is-me .row-name { color: #ff6b35; }
+    .row-you { font-size: 0.65rem; color: #ff6b35; margin-top: 1px; }
+    .td-time { color: #555; font-size: 0.75rem; text-align: right; }
+    .empty-row td { text-align: center; color: #444; padding: 20px; font-size: 0.8rem; cursor: default; }
+
+    /* ── Compass panel ── */
+    #compass-panel {
+      flex-shrink: 0;
+      background: #141414;
+      border-top: 1px solid #2a2a2a;
+      border-bottom: 1px solid #2a2a2a;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #compass-panel.visible { max-height: 200px; }
+
+    .compass-inner {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 14px 20px;
+      position: relative;
+    }
+
+    .compass-ring {
+      position: relative; flex-shrink: 0;
+      width: 140px; height: 140px; border-radius: 50%;
+      background: radial-gradient(circle at center, #161616 60%, #111 100%);
+      border: 2px solid #2a2a2a;
+      box-shadow: inset 0 0 16px rgba(0,0,0,0.6), 0 0 0 1px #333;
+    }
+    .compass-ring::before {
+      content: ''; position: absolute; inset: 10px;
+      border-radius: 50%; border: 1px solid #222;
+    }
+
+    .crd {
+      position: absolute; font-size: 0.6rem; font-weight: 700;
+      width: 16px; text-align: center; line-height: 1;
+      left: 50%; transform: translateX(-50%);
+    }
+    .crd.n { top: 4px;    color: #ff6b35; }
+    .crd.s { bottom: 4px; color: #444; }
+    .crd-h {
+      position: absolute; font-size: 0.6rem; font-weight: 700;
+      width: 16px; text-align: center; line-height: 1;
+      top: 50%; transform: translateY(-50%);
+    }
+    .crd-h.e { right: 4px; color: #444; }
+    .crd-h.w { left: 4px;  color: #444; }
+
+    #compass-needle-wrap {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #compass-needle {
+      width: 16px; height: 112px;
+      transform-origin: center center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .needle-north {
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 54px solid #ff6b35;
+      filter: drop-shadow(0 0 5px rgba(255,107,53,0.55));
+    }
+    .needle-south {
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 54px solid #333;
+    }
+    .compass-pivot {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #fff; border: 2px solid #555; z-index: 2;
+    }
+
+    .compass-info { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .compass-name { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
+    .compass-dist { font-size: 0.82rem; color: #888; }
+
+    .compass-close {
+      position: absolute; top: 12px; right: 16px;
+      background: transparent; border: 1px solid #2a2a2a; color: #555;
+      width: 28px; height: 28px; border-radius: 50%; font-size: 1rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <header>
+    <div class="header-left">
+      <span>🎪</span>
+      <h1>Bonnaroo</h1>
+    </div>
+    <div class="header-right">
+      {% if photo %}<img src="{{ photo }}" alt="{{ name }}" />{% endif %}
+      <span class="user-name">{{ name }}</span>
+      <a href="{% url 'bonnaroo:logout' %}" class="btn-logout">Sign out</a>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <!-- Compass panel -->
+  <div id="compass-panel">
+    <div class="compass-inner">
+      <div class="compass-ring">
+        <span class="crd n">N</span>
+        <span class="crd s">S</span>
+        <span class="crd-h e">E</span>
+        <span class="crd-h w">W</span>
+        <div id="compass-needle-wrap">
+          <div id="compass-needle">
+            <div class="needle-north"></div>
+            <div class="needle-south"></div>
+          </div>
+        </div>
+        <div class="compass-pivot"></div>
+      </div>
+      <div class="compass-info">
+        <div class="compass-name" id="compass-name"></div>
+        <div class="compass-dist" id="compass-dist"></div>
+      </div>
+      <button class="compass-close" onclick="hideCompass()">✕</button>
+    </div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="panel-header">
+      <span class="panel-title">Attendees</span>
+      <div class="status-pill">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">locating…</span>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th style="text-align:right">Last seen</th>
+          </tr>
+        </thead>
+        <tbody id="user-tbody">
+          <tr class="empty-row"><td colspan="2">No one here yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const CSRF = '{{ csrf_token }}';
+
+  const map = L.map('map', { zoomControl: false });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  const dot        = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+
+  let myLat = null, myLng = null;
+  const userData = {}; // key → { lat, lng, name }
+
+  // ── Geo ──────────────────────────────────────────────────
+  function onPosition(pos) {
+    const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+    myLat = lat; myLng = lng;
+    dot.className = 'status-dot active';
+    statusText.textContent = `±${Math.round(accuracy)}m`;
+    fetch('/bonnaroo/api/location/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ lat, lng }),
+    });
+  }
+
+  function onError(err) {
+    dot.className = 'status-dot error';
+    statusText.textContent = err.code === 1 ? 'location denied' : 'unavailable';
+  }
+
+  navigator.geolocation?.watchPosition(onPosition, onError, { enableHighAccuracy: true, timeout: 10000 });
+
+  // ── Math ─────────────────────────────────────────────────
+  function getBearing(lat1, lng1, lat2, lng2) {
+    const toRad = d => d * Math.PI / 180;
+    const dLng  = toRad(lng2 - lng1);
+    const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2))
+            - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+    return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+  }
+
+  function getDistance(lat1, lng1, lat2, lng2) {
+    const R    = 3958.8;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+    const miles = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    if (miles < 0.1) return `${Math.round(miles * 5280)} ft away`;
+    return `${miles.toFixed(1)} mi away`;
+  }
+
+  // ── Markers ───────────────────────────────────────────────
+  function makeIcon(color) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="width:18px;height:18px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px ${color}55"></div>`,
+      iconSize: [18, 18], iconAnchor: [9, 9],
+    });
+  }
+
+  const myIcon    = makeIcon('#ff6b35');
+  const otherIcon = makeIcon('#60a5fa');
+  const markers   = {};
+  let mapCentered = false;
+
+  function updateMarker(u) {
+    const key = String(u.id);
+    userData[key] = { lat: u.lat, lng: u.lng, name: u.name };
+
+    if (markers[key]) {
+      markers[key].marker.setLatLng([u.lat, u.lng]);
+      markers[key].circle?.setLatLng([u.lat, u.lng]);
+    } else {
+      const marker = L.marker([u.lat, u.lng], { icon: u.is_me ? myIcon : otherIcon }).addTo(map);
+      const circle = u.is_me
+        ? L.circle([u.lat, u.lng], { radius: 30, color: '#ff6b35', fillColor: '#ff6b35', fillOpacity: 0.08, weight: 1 }).addTo(map)
+        : null;
+      markers[key] = { marker, circle };
+      marker.on('click', () => selectUser(key));
+      if (u.is_me && !mapCentered) { map.setView([u.lat, u.lng], 16); mapCentered = true; }
+    }
+  }
+
+  function flyTo(key) {
+    const m = markers[String(key)];
+    if (m) map.flyTo(m.marker.getLatLng(), 17);
+  }
+
+  // ── Compass ───────────────────────────────────────────────
+  function showCompass(key) {
+    const u = userData[String(key)];
+    if (!u) return;
+
+    document.getElementById('compass-name').textContent = u.name;
+
+    const needle = document.getElementById('compass-needle');
+
+    if (myLat === null) {
+      document.getElementById('compass-dist').textContent = 'location unavailable';
+      needle.style.transition = 'none';
+      needle.style.transform  = 'rotate(0deg)';
+    } else {
+      const deg  = getBearing(myLat, myLng, u.lat, u.lng);
+      const dist = getDistance(myLat, myLng, u.lat, u.lng);
+      document.getElementById('compass-dist').textContent = dist;
+
+      // reset instantly, then animate: 2 full spins + settle on bearing
+      needle.style.transition = 'none';
+      needle.style.transform  = 'rotate(0deg)';
+      needle.offsetHeight; // force reflow
+      needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
+      needle.style.transform  = `rotate(${deg + 720}deg)`;
+    }
+
+    document.getElementById('compass-panel').classList.add('visible');
+  }
+
+  function hideCompass() {
+    document.getElementById('compass-panel').classList.remove('visible');
+  }
+
+  function selectUser(key) {
+    flyTo(key);
+    showCompass(key);
+  }
+
+  // ── Table ─────────────────────────────────────────────────
+  function renderTable(users) {
+    const tbody = document.getElementById('user-tbody');
+    if (!users.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="2">No one here yet</td></tr>';
+      return;
+    }
+    users.sort((a, b) => (b.is_me ? 1 : 0) - (a.is_me ? 1 : 0));
+    tbody.innerHTML = users.map(u => {
+      const avatar   = u.photo
+        ? `<img class="avatar" src="${u.photo}" alt="${u.name}" />`
+        : `<div class="avatar-initials">${u.name.charAt(0).toUpperCase()}</div>`;
+      const meClass  = u.is_me ? ' class="is-me"' : '';
+      const youBadge = u.is_me ? '<div class="row-you">you</div>' : '';
+      return `<tr${meClass} onclick="selectUser('${u.id}')">
+        <td><div class="td-user">${avatar}<div><div class="row-name">${u.name}</div>${youBadge}</div></div></td>
+        <td class="td-time">${u.last_seen}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function fetchUsers() {
+    try {
+      const data = await fetch('/bonnaroo/api/users/').then(r => r.json());
+      data.users.forEach(updateMarker);
+      renderTable(data.users);
+    } catch (_) {}
+  }
+
+  fetchUsers();
+  setInterval(fetchUsers, 8000);
+</script>
+</body>
+</html>

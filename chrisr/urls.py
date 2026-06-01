@@ -15,14 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from resume.views import ResumeViewSet, SendEmailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', ResumeViewSet.as_view({'get':'list'}), name='resume_viewset'), 
+    path('', ResumeViewSet.as_view({'get':'list'}), name='resume_viewset'),
     path('send-email/', SendEmailView, name='send-email'),
-    
+
+    path('bonnaroo/', include('bonnaroo.urls')),
+    path('social/', include('social_django.urls', namespace='social')),
 ]
