@@ -263,6 +263,8 @@
   const userData = {}; // key → { lat, lng, name }
 
   // ── Geo ──────────────────────────────────────────────────
+  const GEO_OPTS = { enableHighAccuracy: true, timeout: 9000, maximumAge: 5000 };
+
   function onPosition(pos) {
     const { latitude: lat, longitude: lng, accuracy } = pos.coords;
     myLat = lat; myLng = lng;
@@ -276,17 +278,32 @@
     statusText.textContent = err.code === 1 ? 'location denied' : 'unavailable';
   }
 
-  function postLocation() {
-    if (myLat === null || myLng === null) return;
+  function getAndPost() {
+    navigator.geolocation?.getCurrentPosition(pos => {
+      onPosition(pos);
+      fetch('/bonnaroo/api/location/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      });
+    }, onError, GEO_OPTS);
+  }
+
+  // Immediate post on page load using any cached position (fast)
+  navigator.geolocation?.getCurrentPosition(pos => {
+    onPosition(pos);
     fetch('/bonnaroo/api/location/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ lat: myLat, lng: myLng }),
+      body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
     });
-  }
+  }, () => {}, { enableHighAccuracy: false, maximumAge: Infinity, timeout: 3000 });
 
-  navigator.geolocation?.watchPosition(onPosition, onError, { enableHighAccuracy: true, timeout: 10000 });
-  setInterval(postLocation, 10000);
+  // watchPosition keeps myLat/myLng fresh for the compass
+  navigator.geolocation?.watchPosition(onPosition, onError, GEO_OPTS);
+  // Accurate post every 10 seconds
+  getAndPost();
+  setInterval(getAndPost, 10000);
 
   // ── Math ─────────────────────────────────────────────────
   function getBearing(lat1, lng1, lat2, lng2) {
