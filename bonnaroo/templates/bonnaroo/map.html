@@ -514,7 +514,10 @@
     list.innerHTML = pins.map(p => {
       const badge = p.tag ? `<span class="pin-tag">${TAG_LABELS[p.tag] || p.tag}</span>` : '';
       const del = p.is_mine
-        ? `<button class="pin-delete" onclick="deletePin(${p.id})">✕</button>`
+        ? `<form method="post" action="/bonnaroo/api/pins/${p.id}/delete/" style="margin:0;flex-shrink:0">
+             <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF}">
+             <button type="submit" class="pin-delete">✕</button>
+           </form>`
         : '<div style="width:26px;flex-shrink:0"></div>';
       return `<div class="pin-row">
         <div class="pin-dot"></div>
@@ -525,14 +528,6 @@
         ${del}
       </div>`;
     }).join('');
-  }
-
-  async function deletePin(id) {
-    const res = await fetch(`/bonnaroo/api/pins/${id}/delete/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': CSRF },
-    });
-    if (res.ok) fetchPins();
   }
 
   // ── FAB / Pin sheet ──────────────────────────────────────
