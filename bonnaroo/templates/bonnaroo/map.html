@@ -7,79 +7,87 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0d0d0d;
-      color: #fff;
-      overflow: hidden;
-    }
-
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0d0d; color: #fff; overflow: hidden; }
     .layout { display: flex; flex-direction: column; height: 100dvh; }
 
     /* ── Header ── */
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px;
-      background: #1a1a1a; border-bottom: 1px solid #2a2a2a; flex-shrink: 0;
-    }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; flex-shrink: 0; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-left span { font-size: 1.2rem; }
-    .header-left h1 {
-      font-size: 1rem; font-weight: 700;
-      background: linear-gradient(135deg, #ff6b35, #f7931e);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .header-right { display: flex; align-items: center; gap: 8px; }
-    .header-right img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #333; }
+    .header-left h1 { font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #ff6b35, #f7931e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header-right { display: flex; align-items: center; gap: 8px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+    .header-right img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ff6b35; }
     .user-name { font-size: 0.8rem; color: #ccc; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .btn-logout {
-      background: transparent; border: 1px solid #333; color: #888;
-      padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; text-decoration: none;
-    }
 
     /* ── Map ── */
     #map { flex: 1; min-height: 0; }
 
+    /* ── FAB ── */
+    #fab {
+      position: fixed; bottom: calc(38vh + 16px); right: 16px;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #ff6b35; border: none; color: #fff;
+      font-size: 1.6rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(255,107,53,0.45);
+      cursor: pointer; z-index: 500;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s;
+    }
+    #fab:active { transform: scale(0.92); }
+
+    /* ── Compass panel ── */
+    #compass-panel { flex-shrink: 0; background: #141414; border-top: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; overflow: hidden; max-height: 0; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+    #compass-panel.visible { max-height: 200px; }
+    .compass-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 20px; position: relative; }
+    .compass-ring { position: relative; flex-shrink: 0; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at center, #161616 60%, #111 100%); border: 2px solid #2a2a2a; box-shadow: inset 0 0 16px rgba(0,0,0,0.6), 0 0 0 1px #333; }
+    .compass-ring::before { content: ''; position: absolute; inset: 10px; border-radius: 50%; border: 1px solid #222; }
+    #compass-needle-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    #compass-needle { width: 16px; height: 112px; transform-origin: center center; display: flex; flex-direction: column; align-items: center; }
+    .needle-north { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 54px solid #ff6b35; filter: drop-shadow(0 0 5px rgba(255,107,53,0.55)); }
+    .needle-south { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 54px solid #333; }
+    .compass-pivot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid #555; z-index: 2; }
+    .compass-info { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .compass-name { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
+    .compass-dist { font-size: 0.82rem; color: #888; }
+    .compass-live { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #4ade80; opacity: 0; transition: opacity 0.4s; }
+    .compass-live.active { opacity: 1; }
+    .compass-close { position: absolute; top: 12px; right: 16px; background: transparent; border: 1px solid #2a2a2a; color: #555; width: 28px; height: 28px; border-radius: 50%; font-size: 1rem; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
     /* ── Bottom panel ── */
-    .bottom-panel {
-      flex-shrink: 0; background: #1a1a1a; border-top: 1px solid #2a2a2a;
-      max-height: 38vh; display: flex; flex-direction: column;
+    .bottom-panel { flex-shrink: 0; background: #1a1a1a; border-top: 1px solid #2a2a2a; max-height: 38vh; display: flex; flex-direction: column; }
+
+    /* ── Tab bar ── */
+    .tab-bar { display: flex; flex-shrink: 0; border-bottom: 1px solid #222; }
+    .tab-btn {
+      flex: 1; background: transparent; border: none; border-bottom: 2px solid transparent;
+      color: #555; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 10px 8px 8px;
+      cursor: pointer; font-family: inherit; transition: color 0.15s, border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .panel-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px 8px; flex-shrink: 0; border-bottom: 1px solid #222;
-    }
-    .panel-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #666; }
-    .status-pill { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #666; }
+    .tab-btn.active { color: #ff6b35; border-bottom-color: #ff6b35; }
+
+    .tab-status { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #666; padding: 0 12px; flex-shrink: 0; }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #666; flex-shrink: 0; }
     .status-dot.active { background: #4ade80; }
     .status-dot.error  { background: #f87171; }
 
+    /* ── Tab content ── */
+    .tab-pane { display: none; flex: 1; min-height: 0; flex-direction: column; }
+    .tab-pane.active { display: flex; }
+
     /* ── Table ── */
     .table-wrap { overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1; min-height: 0; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    thead th {
-      position: sticky; top: 0; background: #1f1f1f;
-      padding: 6px 12px; text-align: left;
-      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.06em; color: #555; border-bottom: 1px solid #2a2a2a;
-    }
-    tbody tr {
-      border-bottom: 1px solid #222; cursor: pointer;
-      -webkit-tap-highlight-color: transparent; transition: background 0.1s;
-    }
+    thead th { position: sticky; top: 0; background: #1f1f1f; padding: 6px 12px; text-align: left; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #555; border-bottom: 1px solid #2a2a2a; }
+    tbody tr { border-bottom: 1px solid #222; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
     tbody tr:active { background: #222; }
     tbody tr.is-me { background: rgba(255,107,53,0.06); }
     td { padding: 9px 12px; vertical-align: middle; white-space: nowrap; }
     .td-user { display: flex; align-items: center; gap: 10px; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #333; flex-shrink: 0; object-fit: cover; }
-    .avatar-initials {
-      width: 32px; height: 32px; border-radius: 50%; background: #333; border: 2px solid #444;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 600; color: #ccc; flex-shrink: 0;
-    }
+    .avatar-initials { width: 32px; height: 32px; border-radius: 50%; background: #333; border: 2px solid #444; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; color: #ccc; flex-shrink: 0; }
     .is-me .avatar, .is-me .avatar-initials { border-color: #ff6b35; }
     .row-name { font-weight: 500; color: #e0e0e0; }
     .is-me .row-name { color: #ff6b35; }
@@ -87,99 +95,34 @@
     .td-time { color: #555; font-size: 0.75rem; text-align: right; }
     .empty-row td { text-align: center; color: #444; padding: 20px; font-size: 0.8rem; cursor: default; }
 
-    /* ── Compass panel ── */
-    #compass-panel {
-      flex-shrink: 0;
-      background: #141414;
-      border-top: 1px solid #2a2a2a;
-      border-bottom: 1px solid #2a2a2a;
-      overflow: hidden;
-      max-height: 0;
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    #compass-panel.visible { max-height: 200px; }
+    /* ── Pins list ── */
+    .pin-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #222; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+    .pin-row:active { background: #222; }
+    .pin-dot { width: 12px; height: 12px; border-radius: 50%; background: #facc15; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 2px #facc1555; }
+    .pin-info { flex: 1; min-width: 0; }
+    .pin-name { font-size: 0.88rem; font-weight: 500; color: #e0e0e0; }
+    .pin-meta { font-size: 0.72rem; color: #555; margin-top: 1px; }
+    .pin-delete { background: transparent; border: 1px solid #333; color: #666; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
 
-    .compass-inner {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 14px 20px;
-      position: relative;
+    /* ── Pin creation sheet ── */
+    #pin-sheet {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 800; opacity: 0; pointer-events: none; transition: opacity 0.2s;
     }
-
-    .compass-ring {
-      position: relative; flex-shrink: 0;
-      width: 140px; height: 140px; border-radius: 50%;
-      background: radial-gradient(circle at center, #161616 60%, #111 100%);
-      border: 2px solid #2a2a2a;
-      box-shadow: inset 0 0 16px rgba(0,0,0,0.6), 0 0 0 1px #333;
+    #pin-sheet.visible { opacity: 1; pointer-events: all; }
+    .pin-sheet-inner {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 480px; padding: 20px 20px 36px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .compass-ring::before {
-      content: ''; position: absolute; inset: 10px;
-      border-radius: 50%; border: 1px solid #222;
-    }
-
-    .crd {
-      position: absolute; font-size: 0.6rem; font-weight: 700;
-      width: 16px; text-align: center; line-height: 1;
-      left: 50%; transform: translateX(-50%);
-    }
-    .crd.n { top: 4px;    color: #ff6b35; }
-    .crd.s { bottom: 4px; color: #444; }
-    .crd-h {
-      position: absolute; font-size: 0.6rem; font-weight: 700;
-      width: 16px; text-align: center; line-height: 1;
-      top: 50%; transform: translateY(-50%);
-    }
-    .crd-h.e { right: 4px; color: #444; }
-    .crd-h.w { left: 4px;  color: #444; }
-
-    #compass-needle-wrap {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #compass-needle {
-      width: 16px; height: 112px;
-      transform-origin: center center;
-      display: flex; flex-direction: column; align-items: center;
-    }
-    .needle-north {
-      width: 0; height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-bottom: 54px solid #ff6b35;
-      filter: drop-shadow(0 0 5px rgba(255,107,53,0.55));
-    }
-    .needle-south {
-      width: 0; height: 0;
-      border-left: 6px solid transparent;
-      border-right: 6px solid transparent;
-      border-top: 54px solid #333;
-    }
-    .compass-pivot {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #fff; border: 2px solid #555; z-index: 2;
-    }
-
-    .compass-info { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .compass-name { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
-    .compass-dist { font-size: 0.82rem; color: #888; }
-
-    .compass-live {
-      font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.1em; color: #4ade80;
-      opacity: 0; transition: opacity 0.4s;
-    }
-    .compass-live.active { opacity: 1; }
-
-    .compass-close {
-      position: absolute; top: 12px; right: 16px;
-      background: transparent; border: 1px solid #2a2a2a; color: #555;
-      width: 28px; height: 28px; border-radius: 50%; font-size: 1rem; line-height: 1;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .pin-sheet-title { font-size: 0.95rem; font-weight: 600; color: #e0e0e0; }
+    .pin-sheet-sub { font-size: 0.78rem; color: #666; margin-top: -4px; }
+    .pin-name-row { display: flex; align-items: center; gap: 8px; background: #111; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; }
+    .pin-name-row input { flex: 1; background: transparent; border: none; outline: none; color: #e0e0e0; font-size: 0.9rem; padding: 13px 14px; font-family: inherit; }
+    .pin-name-row input::placeholder { color: #444; }
+    .pin-submit { background: #ff6b35; border: none; color: #fff; padding: 13px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+    .pin-cancel { background: transparent; border: 1px solid #2a2a2a; color: #666; padding: 12px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; width: 100%; }
   </style>
 </head>
 <body>
@@ -190,11 +133,10 @@
       <span>🎪</span>
       <h1>ChrisR</h1>
     </div>
-    <div class="header-right">
+    <a href="{% url 'bonnaroo:account' %}" class="header-right">
       {% if photo %}<img src="{{ photo }}" alt="{{ name }}" />{% endif %}
       <span class="user-name">{{ name }}</span>
-      <a href="{% url 'bonnaroo:logout' %}" class="btn-logout">Sign out</a>
-    </div>
+    </a>
   </header>
 
   <div id="map"></div>
@@ -220,29 +162,51 @@
     </div>
   </div>
 
+  <!-- Bottom panel -->
   <div class="bottom-panel">
-    <div class="panel-header">
-      <span class="panel-title">Attendees</span>
-      <div class="status-pill">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-btn-attendees" onclick="switchTab('attendees')">Attendees</button>
+      <button class="tab-btn" id="tab-btn-pins" onclick="switchTab('pins')">Shared Locations</button>
+      <div class="tab-status">
         <div class="status-dot" id="status-dot"></div>
         <span id="status-text">locating…</span>
       </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th style="text-align:right">Last seen</th>
-          </tr>
-        </thead>
-        <tbody id="user-tbody">
-          <tr class="empty-row"><td colspan="2">No one here yet</td></tr>
-        </tbody>
-      </table>
+
+    <!-- Attendees tab -->
+    <div class="tab-pane active" id="pane-attendees">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th style="text-align:right">Last seen</th></tr></thead>
+          <tbody id="user-tbody"><tr class="empty-row"><td colspan="2">No one here yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Shared Locations tab -->
+    <div class="tab-pane" id="pane-pins">
+      <div class="table-wrap" id="pin-list">
+        <div class="empty-row" style="text-align:center;color:#444;padding:20px;font-size:0.8rem">No pins dropped yet</div>
+      </div>
     </div>
   </div>
 
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="showPinSheet()">+</button>
+
+<!-- Pin creation sheet -->
+<div id="pin-sheet" onclick="hidePinSheet()">
+  <div class="pin-sheet-inner" onclick="event.stopPropagation()">
+    <div class="pin-sheet-title">Drop a pin</div>
+    <div class="pin-sheet-sub" id="pin-sheet-sub">Pins your current location for everyone to see.</div>
+    <div class="pin-name-row">
+      <input type="text" id="pin-name-input" placeholder="Name this spot…" maxlength="60" autocomplete="off" />
+      <button class="pin-submit" onclick="submitPin()">Drop</button>
+    </div>
+    <button class="pin-cancel" onclick="hidePinSheet()">Cancel</button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -256,15 +220,13 @@
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
-  const dot        = document.getElementById('status-dot');
+  const dot = document.getElementById('status-dot');
   const statusText = document.getElementById('status-text');
-
-  let myLat = null, myLng = null;
-  const userData = {}; // key → { lat, lng, name }
-
-  // ── Geo ──────────────────────────────────────────────────
+  let myLat = null, myLng = null, mapCentered = false;
+  const userData = {};
   const GEO_OPTS = { enableHighAccuracy: true, timeout: 9000, maximumAge: 5000 };
 
+  // ── Geo ──────────────────────────────────────────────────
   function onPosition(pos) {
     const { latitude: lat, longitude: lng, accuracy } = pos.coords;
     myLat = lat; myLng = lng;
@@ -272,12 +234,10 @@
     statusText.textContent = `±${Math.round(accuracy)}m`;
     if (!mapCentered) { map.setView([lat, lng], 16); mapCentered = true; }
   }
-
   function onError(err) {
     dot.className = 'status-dot error';
     statusText.textContent = err.code === 1 ? 'location denied' : 'unavailable';
   }
-
   function getAndPost() {
     navigator.geolocation?.getCurrentPosition(pos => {
       onPosition(pos);
@@ -288,8 +248,6 @@
       });
     }, onError, GEO_OPTS);
   }
-
-  // Immediate post on page load using any cached position (fast)
   navigator.geolocation?.getCurrentPosition(pos => {
     onPosition(pos);
     fetch('/bonnaroo/api/location/', {
@@ -298,201 +256,172 @@
       body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
     });
   }, () => {}, { enableHighAccuracy: false, maximumAge: Infinity, timeout: 3000 });
-
-  // watchPosition keeps myLat/myLng fresh for the compass
   navigator.geolocation?.watchPosition(onPosition, onError, GEO_OPTS);
-  // Accurate post every 10 seconds
   getAndPost();
   setInterval(getAndPost, 10000);
 
-  // ── Math ─────────────────────────────────────────────────
+  // ── Math ────────────────────────────────────────────────
   function getBearing(lat1, lng1, lat2, lng2) {
-    const toRad = d => d * Math.PI / 180;
-    const dLng  = toRad(lng2 - lng1);
-    const y = Math.sin(dLng) * Math.cos(toRad(lat2));
-    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2))
-            - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+    const r = d => d * Math.PI / 180;
+    const dLng = r(lng2 - lng1);
+    const y = Math.sin(dLng) * Math.cos(r(lat2));
+    const x = Math.cos(r(lat1)) * Math.sin(r(lat2)) - Math.sin(r(lat1)) * Math.cos(r(lat2)) * Math.cos(dLng);
     return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
   }
-
   function getDistance(lat1, lng1, lat2, lng2) {
-    const R    = 3958.8;
-    const toRad = d => d * Math.PI / 180;
-    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
-    const miles = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    if (miles < 0.1) return `${Math.round(miles * 5280)} ft away`;
-    return `${miles.toFixed(1)} mi away`;
+    const r = d => d * Math.PI / 180;
+    const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1)) * Math.cos(r(lat2)) * Math.sin(r(lng2-lng1)/2)**2;
+    const miles = 3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return miles < 0.1 ? `${Math.round(miles*5280)} ft away` : `${miles.toFixed(1)} mi away`;
   }
 
-  // ── Markers ───────────────────────────────────────────────
-  function makeIcon(color) {
+  // ── User markers ─────────────────────────────────────────
+  function makeCircleIcon(color) {
     return L.divIcon({
       className: '',
       html: `<div style="width:18px;height:18px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px ${color}55"></div>`,
       iconSize: [18, 18], iconAnchor: [9, 9],
     });
   }
-
-  const myIcon    = makeIcon('#ff6b35');
-  const otherIcon = makeIcon('#60a5fa');
-  const markers   = {};
-  let mapCentered = false;
+  const myIcon = makeCircleIcon('#ff6b35');
+  const otherIcon = makeCircleIcon('#60a5fa');
+  const markers = {};
 
   function updateMarker(u) {
-    if (u.lat === null || u.lng === null) return; // no location yet, skip marker
+    if (u.lat === null || u.lng === null) return;
     const key = String(u.id);
     userData[key] = { lat: u.lat, lng: u.lng, name: u.name };
-
     if (markers[key]) {
       markers[key].marker.setLatLng([u.lat, u.lng]);
       markers[key].circle?.setLatLng([u.lat, u.lng]);
     } else {
       const marker = L.marker([u.lat, u.lng], { icon: u.is_me ? myIcon : otherIcon }).addTo(map);
-      const circle = u.is_me
-        ? L.circle([u.lat, u.lng], { radius: 30, color: '#ff6b35', fillColor: '#ff6b35', fillOpacity: 0.08, weight: 1 }).addTo(map)
-        : null;
+      const circle = u.is_me ? L.circle([u.lat, u.lng], { radius: 30, color: '#ff6b35', fillColor: '#ff6b35', fillOpacity: 0.08, weight: 1 }).addTo(map) : null;
       markers[key] = { marker, circle };
       marker.on('click', () => selectUser(key));
       if (u.is_me && !mapCentered) { map.setView([u.lat, u.lng], 16); mapCentered = true; }
     }
   }
 
-  function flyTo(key) {
-    const m = markers[String(key)];
-    if (m) map.flyTo(m.marker.getLatLng(), 17);
+  function flyTo(key) { const m = markers[String(key)]; if (m) map.flyTo(m.marker.getLatLng(), 17); }
+
+  // ── Pin markers ──────────────────────────────────────────
+  const pinIcon = L.divIcon({
+    className: '',
+    html: `<div style="display:flex;flex-direction:column;align-items:center">
+      <div style="width:18px;height:18px;background:#facc15;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px #facc1555"></div>
+      <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #facc15;margin-top:-2px"></div>
+    </div>`,
+    iconSize: [18, 26], iconAnchor: [9, 26],
+  });
+  const pinMarkers = {}; // pin id → marker
+
+  function updatePinMarkers(pins) {
+    const seen = new Set();
+    pins.forEach(p => {
+      seen.add(p.id);
+      if (!pinMarkers[p.id]) {
+        const m = L.marker([p.lat, p.lng], { icon: pinIcon }).addTo(map);
+        m.bindTooltip(p.name, { permanent: false, direction: 'top', offset: [0, -28] });
+        m.on('click', () => { switchTab('pins'); map.flyTo([p.lat, p.lng], 17); });
+        pinMarkers[p.id] = m;
+      }
+    });
+    // Remove deleted pins
+    Object.keys(pinMarkers).forEach(id => {
+      if (!seen.has(Number(id))) { pinMarkers[id].remove(); delete pinMarkers[id]; }
+    });
   }
 
-  // ── Compass ───────────────────────────────────────────────
-  let currentBearing  = null;
-  let deviceHeading   = null;
-  let smoothedHeading = null;
-  let orientationLive = false;
-  let orientationBound = false;
+  // ── Compass ──────────────────────────────────────────────
+  let currentBearing = null, deviceHeading = null, smoothedHeading = null;
+  let orientationLive = false, orientationBound = false;
 
   function rawHeadingFromEvent(e) {
-    // iOS: webkitCompassHeading is already true-north clockwise
     if (e.webkitCompassHeading != null) return e.webkitCompassHeading;
-    // Android absolute: alpha is CCW from north → convert
     if (e.alpha != null) return (360 - e.alpha) % 360;
     return null;
   }
-
   function handleOrientation(e) {
     const raw = rawHeadingFromEvent(e);
     if (raw == null) return;
-
-    // Low-pass filter — handles 359°→1° wrap-around
-    if (smoothedHeading == null) {
-      smoothedHeading = raw;
-    } else {
+    if (smoothedHeading == null) { smoothedHeading = raw; }
+    else {
       let diff = raw - smoothedHeading;
-      if (diff > 180)  diff -= 360;
-      if (diff < -180) diff += 360;
+      if (diff > 180) diff -= 360; if (diff < -180) diff += 360;
       smoothedHeading = ((smoothedHeading + diff * 0.25) + 360) % 360;
     }
     deviceHeading = smoothedHeading;
-
     if (orientationLive && currentBearing !== null) {
-      // No CSS transition — orientation events fire fast enough to be smooth on their own
-      const needle = document.getElementById('compass-needle');
-      needle.style.transition = 'none';
-      needle.style.transform  = `rotate(${currentBearing - deviceHeading}deg)`;
+      const n = document.getElementById('compass-needle');
+      n.style.transition = 'none';
+      n.style.transform = `rotate(${currentBearing - deviceHeading}deg)`;
     }
   }
-
   function bindOrientation() {
     if (orientationBound) return;
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
     window.addEventListener('deviceorientation', handleOrientation, true);
     orientationBound = true;
   }
-
   async function showCompass(key) {
     const u = userData[String(key)];
-    if (!u) return; // user has no location yet
-
-    orientationLive = false;
-    smoothedHeading = null;
-
+    if (!u) return;
+    orientationLive = false; smoothedHeading = null;
     document.getElementById('compass-name').textContent = u.name;
     document.getElementById('compass-live').classList.remove('active');
-
-    // ── iOS permission must be requested synchronously inside the user gesture ──
-    // Call requestPermission() NOW (triggers the native dialog), store the Promise,
-    // and await the result later — after the spin animation completes.
     let permissionPromise = null;
-    if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
       try { permissionPromise = DeviceOrientationEvent.requestPermission(); } catch (_) {}
     }
-
     const needle = document.getElementById('compass-needle');
-
     if (myLat === null) {
       document.getElementById('compass-dist').textContent = 'location unavailable';
-      needle.style.transition = 'none';
-      needle.style.transform  = 'rotate(0deg)';
+      needle.style.transition = 'none'; needle.style.transform = 'rotate(0deg)';
     } else {
       currentBearing = getBearing(myLat, myLng, u.lat, u.lng);
       document.getElementById('compass-dist').textContent = getDistance(myLat, myLng, u.lat, u.lng);
-
-      // Spin animation: 2 full rotations then settle on bearing
-      needle.style.transition = 'none';
-      needle.style.transform  = 'rotate(0deg)';
+      needle.style.transition = 'none'; needle.style.transform = 'rotate(0deg)';
       needle.offsetHeight;
       needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
-      needle.style.transform  = `rotate(${currentBearing + 720}deg)`;
-
-      // After spin: check permission result, bind listener, snap to live position
+      needle.style.transform = `rotate(${currentBearing + 720}deg)`;
       setTimeout(async () => {
         if (!document.getElementById('compass-panel').classList.contains('visible')) return;
-
         if (permissionPromise) {
-          // iOS: await the already-triggered permission dialog result
-          try {
-            const result = await permissionPromise;
-            if (result !== 'granted') return;
-          } catch (_) { return; }
+          try { const r = await permissionPromise; if (r !== 'granted') return; } catch (_) { return; }
         }
-
         bindOrientation();
-
-        // Snap needle to correct live position (avoids backwards spin from +720 offset)
         needle.style.transition = 'none';
-        needle.style.transform  = `rotate(${currentBearing - (deviceHeading ?? 0)}deg)`;
+        needle.style.transform = `rotate(${currentBearing - (deviceHeading ?? 0)}deg)`;
         orientationLive = true;
         document.getElementById('compass-live').classList.add('active');
       }, 1600);
     }
-
     document.getElementById('compass-panel').classList.add('visible');
   }
-
   function hideCompass() {
     orientationLive = false;
     document.getElementById('compass-live').classList.remove('active');
     document.getElementById('compass-panel').classList.remove('visible');
   }
+  function selectUser(key) { flyTo(key); showCompass(key); }
 
-  function selectUser(key) {
-    flyTo(key);
-    showCompass(key);
+  // ── Tabs ─────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-btn-' + name).classList.add('active');
+    document.getElementById('pane-' + name).classList.add('active');
   }
 
-  // ── Table ─────────────────────────────────────────────────
+  // ── Attendees table ──────────────────────────────────────
   function renderTable(users) {
     const tbody = document.getElementById('user-tbody');
-    if (!users.length) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="2">No one here yet</td></tr>';
-      return;
-    }
+    if (!users.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="2">No one here yet</td></tr>'; return; }
     users.sort((a, b) => (b.is_me ? 1 : 0) - (a.is_me ? 1 : 0));
     tbody.innerHTML = users.map(u => {
-      const avatar   = u.photo
-        ? `<img class="avatar" src="${u.photo}" alt="${u.name}" />`
-        : `<div class="avatar-initials">${u.name.charAt(0).toUpperCase()}</div>`;
-      const meClass  = u.is_me ? ' class="is-me"' : '';
+      const avatar = u.photo ? `<img class="avatar" src="${u.photo}" alt="${u.name}" />` : `<div class="avatar-initials">${u.name.charAt(0).toUpperCase()}</div>`;
+      const meClass = u.is_me ? ' class="is-me"' : '';
       const youBadge = u.is_me ? '<div class="row-you">you</div>' : '';
       return `<tr${meClass} onclick="selectUser('${u.id}')">
         <td><div class="td-user">${avatar}<div><div class="row-name">${u.name}</div>${youBadge}</div></div></td>
@@ -501,6 +430,65 @@
     }).join('');
   }
 
+  // ── Pins list ────────────────────────────────────────────
+  function renderPins(pins) {
+    const list = document.getElementById('pin-list');
+    if (!pins.length) {
+      list.innerHTML = '<div class="empty-row" style="text-align:center;color:#444;padding:20px;font-size:0.8rem">No pins dropped yet</div>';
+      return;
+    }
+    list.innerHTML = pins.map(p => {
+      const del = p.is_mine ? `<button class="pin-delete" onclick="deletePin(event,${p.id})">✕</button>` : '';
+      return `<div class="pin-row" onclick="flyToPin(${p.lat},${p.lng})">
+        <div class="pin-dot"></div>
+        <div class="pin-info">
+          <div class="pin-name">${p.name}</div>
+          <div class="pin-meta">${p.creator} · ${p.age}</div>
+        </div>
+        ${del}
+      </div>`;
+    }).join('');
+  }
+
+  function flyToPin(lat, lng) { map.flyTo([lat, lng], 17); }
+
+  async function deletePin(e, id) {
+    e.stopPropagation();
+    await fetch(`/bonnaroo/api/pins/${id}/delete/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF },
+    });
+    fetchPins();
+  }
+
+  // ── FAB / Pin sheet ──────────────────────────────────────
+  function showPinSheet() {
+    if (myLat === null) {
+      document.getElementById('pin-sheet-sub').textContent = 'Waiting for your location…';
+    } else {
+      document.getElementById('pin-sheet-sub').textContent = 'Pins your current location for everyone to see.';
+    }
+    document.getElementById('pin-name-input').value = '';
+    document.getElementById('pin-sheet').classList.add('visible');
+    setTimeout(() => document.getElementById('pin-name-input').focus(), 300);
+  }
+  function hidePinSheet() { document.getElementById('pin-sheet').classList.remove('visible'); }
+
+  async function submitPin() {
+    const name = document.getElementById('pin-name-input').value.trim();
+    if (!name) return;
+    if (myLat === null) { alert('Location not available yet.'); return; }
+    hidePinSheet();
+    await fetch('/bonnaroo/api/pins/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ name, lat: myLat, lng: myLng }),
+    });
+    fetchPins();
+    switchTab('pins');
+  }
+
+  // ── Fetch loops ──────────────────────────────────────────
   async function fetchUsers() {
     try {
       const data = await fetch('/bonnaroo/api/users/').then(r => r.json());
@@ -509,8 +497,17 @@
     } catch (_) {}
   }
 
-  fetchUsers();
+  async function fetchPins() {
+    try {
+      const data = await fetch('/bonnaroo/api/pins/').then(r => r.json());
+      updatePinMarkers(data.pins);
+      renderPins(data.pins);
+    } catch (_) {}
+  }
+
+  fetchUsers();  fetchPins();
   setInterval(fetchUsers, 8000);
+  setInterval(fetchPins, 8000);
 </script>
 </body>
 </html>
