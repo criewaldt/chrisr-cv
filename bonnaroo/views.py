@@ -1,12 +1,28 @@
+import functools
 import json
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .models import SharedLocation, UserLocation
+
+CHECKIN_PERIOD = 60  # seconds between allowed location updates
+
+def _rate_limit_checkin(view_func):
+    @functools.wraps(view_func)
+    def wrapped(request, *args, **kwargs):
+        key = f'rl:checkin:{request.user.id}'
+        if cache.get(key):
+            resp = JsonResponse({'error': 'rate limit exceeded'}, status=429)
+            resp['Retry-After'] = CHECKIN_PERIOD
+            return resp
+        cache.set(key, 1, timeout=CHECKIN_PERIOD)
+        return view_func(request, *args, **kwargs)
+    return wrapped
 
 
 def login_page(request):
@@ -69,14 +85,25 @@ def delete_account(request):
 
 
 @login_required(login_url='/bonnaroo/')
+@require_POST
+@_rate_limit_checkin
 def update_location(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'invalid JSON'}, status=400)
 
-    data = json.loads(request.body)
     lat, lng = data.get('lat'), data.get('lng')
     if lat is None or lng is None:
         return JsonResponse({'error': 'lat and lng required'}, status=400)
+
+    try:
+        lat, lng = float(lat), float(lng)
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'invalid coordinates'}, status=400)
+
+    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+        return JsonResponse({'error': 'coordinates out of range'}, status=400)
 
     UserLocation.objects.update_or_create(
         user=request.user,
@@ -134,12 +161,33 @@ def all_users(request):
 @login_required(login_url='/bonnaroo/')
 def pins(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'invalid JSON'}, status=400)
+
         name = data.get('name', '').strip()
-        tag  = data.get('tag', '')
+        tag = data.get('tag', '')
         lat, lng = data.get('lat'), data.get('lng')
+
         if not name or lat is None or lng is None:
             return JsonResponse({'error': 'name, lat, and lng required'}, status=400)
+
+        if len(name) > 100:
+            return JsonResponse({'error': 'name too long'}, status=400)
+
+        try:
+            lat, lng = float(lat), float(lng)
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'invalid coordinates'}, status=400)
+
+        if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+            return JsonResponse({'error': 'coordinates out of range'}, status=400)
+
+        valid_tags = {choice[0] for choice in SharedLocation.TAG_CHOICES}
+        if tag not in valid_tags:
+            tag = ''
+
         pin = SharedLocation.objects.create(user=request.user, name=name, tag=tag, lat=lat, lng=lng)
         return JsonResponse({'id': pin.id, 'ok': True})
 
@@ -171,9 +219,10 @@ def pins(request):
 
 
 @login_required(login_url='/bonnaroo/')
+@require_POST
 def delete_pin(request, pin_id):
     SharedLocation.objects.filter(id=pin_id, user=request.user).delete()
-    return redirect('bonnaroo:map')
+    return JsonResponse({'ok': True})
 
 
 def logout_view(request):
