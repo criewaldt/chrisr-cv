@@ -253,7 +253,7 @@
 <script>
   const CSRF = '{{ csrf_token }}';
 
-  const map = L.map('map', { zoomControl: false });
+  const map = L.map('map', { zoomControl: false }).setView([32.789, -79.983], 15);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -272,6 +272,7 @@
     myLat = lat; myLng = lng;
     dot.className = 'status-dot active';
     statusText.textContent = `±${Math.round(accuracy)}m`;
+    if (!mapCentered) { map.setView([lat, lng], 16); mapCentered = true; }
     fetch('/bonnaroo/api/location/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
@@ -388,19 +389,6 @@
     orientationBound = true;
   }
 
-  async function startOrientationTracking() {
-    // iOS 13+ requires a user-gesture permission request
-    if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
-      try {
-        const result = await DeviceOrientationEvent.requestPermission();
-        if (result !== 'granted') return false;
-      } catch (_) { return false; }
-    }
-    bindOrientation();
-    return true;
-  }
-
   async function showCompass(key) {
     const u = userData[String(key)];
     if (!u) return;
@@ -410,6 +398,15 @@
 
     document.getElementById('compass-name').textContent = u.name;
     document.getElementById('compass-live').classList.remove('active');
+
+    // ── iOS permission must be requested synchronously inside the user gesture ──
+    // Call requestPermission() NOW (triggers the native dialog), store the Promise,
+    // and await the result later — after the spin animation completes.
+    let permissionPromise = null;
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try { permissionPromise = DeviceOrientationEvent.requestPermission(); } catch (_) {}
+    }
 
     const needle = document.getElementById('compass-needle');
 
@@ -428,22 +425,25 @@
       needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
       needle.style.transform  = `rotate(${currentBearing + 720}deg)`;
 
-      // After spin completes, snap needle to live position and start tracking
+      // After spin: check permission result, bind listener, snap to live position
       setTimeout(async () => {
         if (!document.getElementById('compass-panel').classList.contains('visible')) return;
-        const ok = await startOrientationTracking();
-        if (ok) {
-          // Snap to correct position without CSS animation before enabling live updates
-          // (avoids a backwards spin from the offset 720° used by the spin animation)
-          needle.style.transition = 'none';
-          if (deviceHeading !== null) {
-            needle.style.transform = `rotate(${currentBearing - deviceHeading}deg)`;
-          } else {
-            needle.style.transform = `rotate(${currentBearing}deg)`;
-          }
-          orientationLive = true;
-          document.getElementById('compass-live').classList.add('active');
+
+        if (permissionPromise) {
+          // iOS: await the already-triggered permission dialog result
+          try {
+            const result = await permissionPromise;
+            if (result !== 'granted') return;
+          } catch (_) { return; }
         }
+
+        bindOrientation();
+
+        // Snap needle to correct live position (avoids backwards spin from +720 offset)
+        needle.style.transition = 'none';
+        needle.style.transform  = `rotate(${currentBearing - (deviceHeading ?? 0)}deg)`;
+        orientationLive = true;
+        document.getElementById('compass-live').classList.add('active');
       }, 1600);
     }
 
