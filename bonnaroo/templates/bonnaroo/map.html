@@ -313,7 +313,7 @@
   navigator.geolocation?.getCurrentPosition(async pos => {
     onPosition(pos);
     const res = await postLocation();
-    if (res?.ok) startCooldown(60);
+    if (res?.ok) { startCooldown(60); await fetchUsers(); }
   }, () => {}, { enableHighAccuracy: false, maximumAge: Infinity, timeout: 3000 });
 
   // watchPosition keeps myLat/myLng fresh for the compass — no server posts
@@ -330,6 +330,7 @@
       if (res?.ok) {
         startCooldown(60);
         await fetchUsers();
+        map.flyTo([myLat, myLng], Math.max(map.getZoom(), 16));
       } else if (res?.status === 429) {
         const retryAfter = parseInt(res.headers.get('Retry-After') || '60', 10);
         startCooldown(retryAfter);
