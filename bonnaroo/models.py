@@ -15,8 +15,17 @@ class UserLocation(models.Model):
 
 
 class SharedLocation(models.Model):
+    TAG_CHOICES = [
+        ('', 'None'),
+        ('food', 'Food'),
+        ('water', 'Water'),
+        ('stage', 'Stage'),
+        ('bathroom', 'Bathroom'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_locations')
     name = models.CharField(max_length=100)
+    tag = models.CharField(max_length=20, blank=True, default='', choices=TAG_CHOICES)
     lat = models.FloatField()
     lng = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)

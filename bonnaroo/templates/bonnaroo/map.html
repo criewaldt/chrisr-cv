@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChrisR's Friend Finder</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
@@ -123,6 +123,48 @@
     .pin-name-row input::placeholder { color: #444; }
     .pin-submit { background: #ff6b35; border: none; color: #fff; padding: 13px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; flex-shrink: 0; }
     .pin-cancel { background: transparent; border: 1px solid #2a2a2a; color: #666; padding: 12px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; width: 100%; }
+
+    /* tag pills */
+    .tag-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag-pill {
+      background: #111; border: 1px solid #2a2a2a; color: #666;
+      padding: 7px 14px; border-radius: 20px; font-size: 0.8rem;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tag-pill.selected { background: #1e1411; border-color: #ff6b35; color: #ff6b35; }
+
+    /* tag badge in list */
+    .pin-tag { display: inline-block; font-size: 0.65rem; font-weight: 600; padding: 2px 7px; border-radius: 10px; background: #1e1411; color: #ff6b35; border: 1px solid #ff6b3544; margin-left: 4px; vertical-align: middle; }
+
+    /* neutralise any Leaflet default div-icon styling */
+    .leaflet-div-icon { background: transparent !important; border: none !important; padding: 0 !important; }
+
+    /* ── Desktop hover states ── */
+    @media (hover: hover) {
+      .header-right:hover img { border-color: #f7931e; }
+      .tab-btn:hover:not(.active) { color: #aaa; }
+      tbody tr:hover { background: #1f1f1f; }
+      .pin-info:hover { background: #1f1f1f; }
+      .pin-delete:hover { border-color: #f87171; color: #f87171; }
+      #fab:hover { background: #f7931e; transform: scale(1.05); }
+      .tag-pill:hover:not(.selected) { border-color: #555; color: #aaa; }
+      .btn-logout:hover { border-color: #555; color: #aaa; }
+      .compass-close:hover { border-color: #555; color: #aaa; }
+      .pin-submit:hover { background: #f7931e; }
+      .pin-cancel:hover { border-color: #555; color: #aaa; }
+    }
+
+    /* ── Desktop layout adjustments ── */
+    @media (min-width: 640px) {
+      /* Center pin sheet instead of anchoring to bottom */
+      #pin-sheet { align-items: center; }
+      .pin-sheet-inner { border-radius: 20px; max-width: 420px; padding: 28px 28px 28px; }
+
+      /* Wider bottom panel cap */
+      .bottom-panel { max-height: 35vh; }
+    }
   </style>
 </head>
 <body>
@@ -201,6 +243,13 @@
   <div class="pin-sheet-inner" onclick="event.stopPropagation()">
     <div class="pin-sheet-title">Drop a pin</div>
     <div class="pin-sheet-sub" id="pin-sheet-sub">Pins your current location for everyone to see.</div>
+    <div class="tag-pills" id="tag-pills">
+      <button class="tag-pill selected" data-tag="">None</button>
+      <button class="tag-pill" data-tag="food">🍕 Food</button>
+      <button class="tag-pill" data-tag="water">💧 Water</button>
+      <button class="tag-pill" data-tag="stage">🎸 Stage</button>
+      <button class="tag-pill" data-tag="bathroom">🚻 Bathroom</button>
+    </div>
     <div class="pin-name-row">
       <input type="text" id="pin-name-input" placeholder="Name this spot…" maxlength="60" autocomplete="off" />
       <button class="pin-submit" onclick="submitPin()">Drop</button>
@@ -278,7 +327,7 @@
   // ── User markers ─────────────────────────────────────────
   function makeCircleIcon(color) {
     return L.divIcon({
-      className: '',
+      className: 'leaflet-div-icon',
       html: `<div style="width:18px;height:18px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px ${color}55"></div>`,
       iconSize: [18, 18], iconAnchor: [9, 9],
     });
@@ -306,24 +355,39 @@
   function flyTo(key) { const m = markers[String(key)]; if (m) map.flyTo(m.marker.getLatLng(), 17); }
 
   // ── Pin markers ──────────────────────────────────────────
-  const pinIcon = L.divIcon({
-    className: '',
-    html: `<div style="display:flex;flex-direction:column;align-items:center">
-      <div style="width:18px;height:18px;background:#facc15;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px #facc1555"></div>
-      <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #facc15;margin-top:-2px"></div>
-    </div>`,
-    iconSize: [18, 26], iconAnchor: [9, 26],
-  });
+  function makePinIcon(color) {
+    return L.divIcon({
+      className: 'leaflet-div-icon',
+      html: `<div style="display:flex;flex-direction:column;align-items:center;width:18px"><div style="width:18px;height:18px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px ${color}55;flex-shrink:0"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid ${color};margin-top:-2px;flex-shrink:0"></div></div>`,
+      iconSize: [18, 26], iconAnchor: [9, 26],
+    });
+  }
+  function makeEmojiIcon(emoji) {
+    return L.divIcon({
+      className: 'leaflet-div-icon',
+      html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">${emoji}</div>`,
+      iconSize: [28, 28], iconAnchor: [14, 28],
+    });
+  }
+  const PIN_ICONS = {
+    '':       makePinIcon('#facc15'),
+    food:     makeEmojiIcon('🍕'),
+    water:    makeEmojiIcon('💧'),
+    stage:    makeEmojiIcon('🎸'),
+    bathroom: makeEmojiIcon('🚻'),
+  };
   const pinMarkers = {}; // pin id → marker
+  const pinData    = {}; // pin id → { lat, lng, name }
 
   function updatePinMarkers(pins) {
     const seen = new Set();
     pins.forEach(p => {
       seen.add(p.id);
+      pinData[p.id] = { lat: p.lat, lng: p.lng, name: p.name };
       if (!pinMarkers[p.id]) {
-        const m = L.marker([p.lat, p.lng], { icon: pinIcon }).addTo(map);
+        const m = L.marker([p.lat, p.lng], { icon: PIN_ICONS[p.tag] || PIN_ICONS[''] }).addTo(map);
         m.bindTooltip(p.name, { permanent: false, direction: 'top', offset: [0, -28] });
-        m.on('click', () => { switchTab('pins'); map.flyTo([p.lat, p.lng], 17); });
+        m.on('click', () => { switchTab('pins'); selectPin(p.id); });
         pinMarkers[p.id] = m;
       }
     });
@@ -364,11 +428,9 @@
     window.addEventListener('deviceorientation', handleOrientation, true);
     orientationBound = true;
   }
-  async function showCompass(key) {
-    const u = userData[String(key)];
-    if (!u) return;
+  async function openCompass(name, lat, lng) {
     orientationLive = false; smoothedHeading = null;
-    document.getElementById('compass-name').textContent = u.name;
+    document.getElementById('compass-name').textContent = name;
     document.getElementById('compass-live').classList.remove('active');
     let permissionPromise = null;
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -379,8 +441,8 @@
       document.getElementById('compass-dist').textContent = 'location unavailable';
       needle.style.transition = 'none'; needle.style.transform = 'rotate(0deg)';
     } else {
-      currentBearing = getBearing(myLat, myLng, u.lat, u.lng);
-      document.getElementById('compass-dist').textContent = getDistance(myLat, myLng, u.lat, u.lng);
+      currentBearing = getBearing(myLat, myLng, lat, lng);
+      document.getElementById('compass-dist').textContent = getDistance(myLat, myLng, lat, lng);
       needle.style.transition = 'none'; needle.style.transform = 'rotate(0deg)';
       needle.offsetHeight;
       needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
@@ -404,7 +466,18 @@
     document.getElementById('compass-live').classList.remove('active');
     document.getElementById('compass-panel').classList.remove('visible');
   }
-  function selectUser(key) { flyTo(key); showCompass(key); }
+  function selectUser(key) {
+    const u = userData[String(key)];
+    if (!u) return;
+    flyTo(key);
+    openCompass(u.name, u.lat, u.lng);
+  }
+  function selectPin(id) {
+    const p = pinData[id];
+    if (!p) return;
+    map.flyTo([p.lat, p.lng], 17);
+    openCompass(p.name, p.lat, p.lng);
+  }
 
   // ── Tabs ─────────────────────────────────────────────────
   function switchTab(name) {
@@ -437,12 +510,16 @@
       list.innerHTML = '<div class="empty-row" style="text-align:center;color:#444;padding:20px;font-size:0.8rem">No pins dropped yet</div>';
       return;
     }
+    const TAG_LABELS = { food: '🍕 Food', water: '💧 Water', stage: '🎸 Stage', bathroom: '🚻 Bathroom' };
     list.innerHTML = pins.map(p => {
-      const del = p.is_mine ? `<button class="pin-delete" onclick="deletePin(event,${p.id})">✕</button>` : '';
-      return `<div class="pin-row" onclick="flyToPin(${p.lat},${p.lng})">
+      const badge = p.tag ? `<span class="pin-tag">${TAG_LABELS[p.tag] || p.tag}</span>` : '';
+      const del = p.is_mine
+        ? `<button class="pin-delete" onclick="deletePin(${p.id})">✕</button>`
+        : '<div style="width:26px;flex-shrink:0"></div>';
+      return `<div class="pin-row">
         <div class="pin-dot"></div>
-        <div class="pin-info">
-          <div class="pin-name">${p.name}</div>
+        <div class="pin-info" onclick="selectPin(${p.id})" style="cursor:pointer">
+          <div class="pin-name">${p.name}${badge}</div>
           <div class="pin-meta">${p.creator} · ${p.age}</div>
         </div>
         ${del}
@@ -450,18 +527,23 @@
     }).join('');
   }
 
-  function flyToPin(lat, lng) { map.flyTo([lat, lng], 17); }
-
-  async function deletePin(e, id) {
-    e.stopPropagation();
-    await fetch(`/bonnaroo/api/pins/${id}/delete/`, {
+  async function deletePin(id) {
+    const res = await fetch(`/bonnaroo/api/pins/${id}/delete/`, {
       method: 'POST',
       headers: { 'X-CSRFToken': CSRF },
     });
-    fetchPins();
+    if (res.ok) fetchPins();
   }
 
   // ── FAB / Pin sheet ──────────────────────────────────────
+  // Tag pill selection via event delegation — more reliable on iOS than inline onclick
+  document.getElementById('tag-pills').addEventListener('click', e => {
+    const pill = e.target.closest('.tag-pill');
+    if (!pill) return;
+    document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+  });
+
   function showPinSheet() {
     if (myLat === null) {
       document.getElementById('pin-sheet-sub').textContent = 'Waiting for your location…';
@@ -469,6 +551,9 @@
       document.getElementById('pin-sheet-sub').textContent = 'Pins your current location for everyone to see.';
     }
     document.getElementById('pin-name-input').value = '';
+    // Reset tag selection to None
+    document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('selected'));
+    document.querySelector('.tag-pill[data-tag=""]').classList.add('selected');
     document.getElementById('pin-sheet').classList.add('visible');
     setTimeout(() => document.getElementById('pin-name-input').focus(), 300);
   }
@@ -478,11 +563,12 @@
     const name = document.getElementById('pin-name-input').value.trim();
     if (!name) return;
     if (myLat === null) { alert('Location not available yet.'); return; }
+    const tag = document.querySelector('.tag-pill.selected')?.dataset.tag ?? '';
     hidePinSheet();
     await fetch('/bonnaroo/api/pins/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ name, lat: myLat, lng: myLng }),
+      body: JSON.stringify({ name, tag, lat: myLat, lng: myLng }),
     });
     fetchPins();
     switchTab('pins');

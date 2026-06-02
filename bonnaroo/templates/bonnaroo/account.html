@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Account</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -87,6 +87,16 @@
       transition: background 0.1s;
     }
     .action-btn:active { background: #222; }
+
+    @media (hover: hover) {
+      .action-btn:hover { background: #1f1f1f; }
+      .action-btn.danger:hover { background: #1f0a0a; }
+      .back-btn:hover { border-color: #555; color: #aaa; }
+      .name-save-btn:hover { color: #f7931e; }
+    }
+    @media (min-width: 640px) {
+      .content { max-width: 520px; margin: 0 auto; }
+    }
     .action-btn .btn-icon { font-size: 1.1rem; width: 20px; text-align: center; }
     .action-btn .btn-label { color: #ccc; }
     .action-btn.danger .btn-label { color: #f87171; }

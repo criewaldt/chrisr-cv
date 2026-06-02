@@ -136,10 +136,11 @@ def pins(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         name = data.get('name', '').strip()
+        tag  = data.get('tag', '')
         lat, lng = data.get('lat'), data.get('lng')
         if not name or lat is None or lng is None:
             return JsonResponse({'error': 'name, lat, and lng required'}, status=400)
-        pin = SharedLocation.objects.create(user=request.user, name=name, lat=lat, lng=lng)
+        pin = SharedLocation.objects.create(user=request.user, name=name, tag=tag, lat=lat, lng=lng)
         return JsonResponse({'id': pin.id, 'ok': True})
 
     now = timezone.now()
@@ -159,6 +160,7 @@ def pins(request):
         result.append({
             'id': pin.id,
             'name': pin.name,
+            'tag': pin.tag,
             'lat': pin.lat,
             'lng': pin.lng,
             'creator': pin.user.get_full_name() or pin.user.username,
