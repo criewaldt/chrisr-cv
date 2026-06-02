@@ -13,5 +13,5 @@ urlpatterns = [
     path('api/location/', views.update_location, name='update_location'),
     path('api/users/', views.all_users, name='all_users'),
     path('api/pins/', views.pins, name='pins'),
-    path('api/pins/<int:pin_id>/delete/', views.delete_pin, name='delete_pin'),
+    path('pins/<int:pin_id>/delete/', views.delete_pin, name='delete_pin'),
 ]

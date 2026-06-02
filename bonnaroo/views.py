@@ -171,7 +171,6 @@ def pins(request):
 
 
 @login_required(login_url='/bonnaroo/')
-@require_POST
 def delete_pin(request, pin_id):
     SharedLocation.objects.filter(id=pin_id, user=request.user).delete()
     return redirect('bonnaroo:map')

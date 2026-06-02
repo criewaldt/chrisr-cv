@@ -514,10 +514,7 @@
     list.innerHTML = pins.map(p => {
       const badge = p.tag ? `<span class="pin-tag">${TAG_LABELS[p.tag] || p.tag}</span>` : '';
       const del = p.is_mine
-        ? `<form method="post" action="/bonnaroo/api/pins/${p.id}/delete/" style="margin:0;flex-shrink:0">
-             <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF}">
-             <button type="submit" class="pin-delete">✕</button>
-           </form>`
+        ? `<a href="/bonnaroo/pins/${p.id}/delete/" class="pin-delete" onclick="event.stopPropagation()">✕</a>`
         : '<div style="width:26px;flex-shrink:0"></div>';
       return `<div class="pin-row">
         <div class="pin-dot"></div>
@@ -557,16 +554,21 @@
   async function submitPin() {
     const name = document.getElementById('pin-name-input').value.trim();
     if (!name) return;
-    if (myLat === null) { alert('Location not available yet.'); return; }
+    if (myLat === null) { alert('Location not available yet — allow location access and try again.'); return; }
     const tag = document.querySelector('.tag-pill.selected')?.dataset.tag ?? '';
     hidePinSheet();
-    await fetch('/bonnaroo/api/pins/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ name, tag, lat: myLat, lng: myLng }),
-    });
-    fetchPins();
-    switchTab('pins');
+    try {
+      const res = await fetch('/bonnaroo/api/pins/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ name, tag, lat: myLat, lng: myLng }),
+      });
+      if (!res.ok) throw new Error(res.status);
+      await fetchPins();
+      switchTab('pins');
+    } catch (e) {
+      alert('Could not drop pin. Please try again.');
+    }
   }
 
   // ── Fetch loops ──────────────────────────────────────────
@@ -579,11 +581,9 @@
   }
 
   async function fetchPins() {
-    try {
-      const data = await fetch('/bonnaroo/api/pins/').then(r => r.json());
-      updatePinMarkers(data.pins);
-      renderPins(data.pins);
-    } catch (_) {}
+    const data = await fetch('/bonnaroo/api/pins/').then(r => r.json());
+    updatePinMarkers(data.pins);
+    renderPins(data.pins);
   }
 
   fetchUsers();  fetchPins();
