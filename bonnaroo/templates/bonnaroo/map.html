@@ -362,7 +362,7 @@
     const raw = rawHeadingFromEvent(e);
     if (raw == null) return;
 
-    // Low-pass filter to smooth jitter, handles 359°→1° wrap-around
+    // Low-pass filter — handles 359°→1° wrap-around
     if (smoothedHeading == null) {
       smoothedHeading = raw;
     } else {
@@ -374,8 +374,10 @@
     deviceHeading = smoothedHeading;
 
     if (orientationLive && currentBearing !== null) {
+      // No CSS transition — orientation events fire fast enough to be smooth on their own
       const needle = document.getElementById('compass-needle');
-      needle.style.transform = `rotate(${currentBearing - deviceHeading}deg)`;
+      needle.style.transition = 'none';
+      needle.style.transform  = `rotate(${currentBearing - deviceHeading}deg)`;
     }
   }
 
@@ -426,15 +428,21 @@
       needle.style.transition = 'transform 1.5s cubic-bezier(0.15, 0.85, 0.35, 1.0)';
       needle.style.transform  = `rotate(${currentBearing + 720}deg)`;
 
-      // After spin, hand off to live orientation
+      // After spin completes, snap needle to live position and start tracking
       setTimeout(async () => {
-        if (document.getElementById('compass-panel').classList.contains('visible')) {
-          const ok = await startOrientationTracking();
-          if (ok) {
-            needle.style.transition = 'transform 0.1s linear';
-            orientationLive = true;
-            document.getElementById('compass-live').classList.add('active');
+        if (!document.getElementById('compass-panel').classList.contains('visible')) return;
+        const ok = await startOrientationTracking();
+        if (ok) {
+          // Snap to correct position without CSS animation before enabling live updates
+          // (avoids a backwards spin from the offset 720° used by the spin animation)
+          needle.style.transition = 'none';
+          if (deviceHeading !== null) {
+            needle.style.transform = `rotate(${currentBearing - deviceHeading}deg)`;
+          } else {
+            needle.style.transform = `rotate(${currentBearing}deg)`;
           }
+          orientationLive = true;
+          document.getElementById('compass-live').classList.add('active');
         }
       }, 1600);
     }
