@@ -93,16 +93,6 @@ def all_users(request):
 
     users.sort(key=lambda u: (u['lat'] is None, u['last_seen']))
 
-    users.append({
-        'id': 'test',
-        'name': 'Test User',
-        'photo': '',
-        'lat': 32.7891,
-        'lng': -79.9834,
-        'last_seen': 'always here',
-        'is_me': False,
-    })
-
     return JsonResponse({'users': users})
 
 
