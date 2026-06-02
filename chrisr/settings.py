@@ -22,6 +22,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['chrisr-resume-1f6a2601c7fd.herokuapp.com', 'chrisriewaldt.com', '127.0.0.1', 'www.chrisriewaldt.com', 'localhost']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://chrisriewaldt.com',
+    'https://www.chrisriewaldt.com',
+    'https://chrisr-resume-1f6a2601c7fd.herokuapp.com',
+]
+
 
 # Application definition
 
