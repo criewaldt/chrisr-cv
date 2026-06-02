@@ -50,42 +50,48 @@ def update_location(request):
 
 @login_required(login_url='/bonnaroo/')
 def all_users(request):
-    locations = (
-        UserLocation.objects
+    from social_django.models import UserSocialAuth
+
+    # All users who have ever signed in via Google, with their location if available
+    social_accounts = (
+        UserSocialAuth.objects
+        .filter(provider='google-oauth2')
         .select_related('user')
-        .prefetch_related('user__social_auth')
-        .order_by('-updated_at')
+        .prefetch_related('user__bonnaroo_location')
     )
 
     now = timezone.now()
     users = []
-    for loc in locations:
-        u = loc.user
-        try:
-            social = u.social_auth.get(provider='google-oauth2')
-            photo = social.extra_data.get('picture', '')
-        except Exception:
-            photo = ''
+    for sa in social_accounts:
+        u = sa.user
+        photo = sa.extra_data.get('picture', '')
 
-        delta = int((now - loc.updated_at).total_seconds())
-        if delta < 60:
-            last_seen = 'just now'
-        elif delta < 3600:
-            last_seen = f'{delta // 60}m ago'
-        elif delta < 86400:
-            last_seen = f'{delta // 3600}h ago'
-        else:
-            last_seen = loc.updated_at.strftime('%b %-d')
+        try:
+            loc = u.bonnaroo_location
+            lat, lng = loc.lat, loc.lng
+            delta = int((now - loc.updated_at).total_seconds())
+            if delta < 60:
+                last_seen = 'just now'
+            elif delta < 3600:
+                last_seen = f'{delta // 60}m ago'
+            elif delta < 86400:
+                last_seen = f'{delta // 3600}h ago'
+            else:
+                last_seen = loc.updated_at.strftime('%b %-d')
+        except UserLocation.DoesNotExist:
+            lat, lng, last_seen = None, None, 'no location yet'
 
         users.append({
             'id': u.id,
             'name': u.get_full_name() or u.username,
             'photo': photo,
-            'lat': loc.lat,
-            'lng': loc.lng,
+            'lat': lat,
+            'lng': lng,
             'last_seen': last_seen,
             'is_me': u.id == request.user.id,
         })
+
+    users.sort(key=lambda u: (u['lat'] is None, u['last_seen']))
 
     users.append({
         'id': 'test',

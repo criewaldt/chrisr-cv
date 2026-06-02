@@ -203,10 +203,6 @@
   <div id="compass-panel">
     <div class="compass-inner">
       <div class="compass-ring">
-        <span class="crd n">N</span>
-        <span class="crd s">S</span>
-        <span class="crd-h e">E</span>
-        <span class="crd-h w">W</span>
         <div id="compass-needle-wrap">
           <div id="compass-needle">
             <div class="needle-north"></div>
@@ -322,6 +318,7 @@
   let mapCentered = false;
 
   function updateMarker(u) {
+    if (u.lat === null || u.lng === null) return; // no location yet, skip marker
     const key = String(u.id);
     userData[key] = { lat: u.lat, lng: u.lng, name: u.name };
 
@@ -391,7 +388,7 @@
 
   async function showCompass(key) {
     const u = userData[String(key)];
-    if (!u) return;
+    if (!u) return; // user has no location yet
 
     orientationLive = false;
     smoothedHeading = null;
