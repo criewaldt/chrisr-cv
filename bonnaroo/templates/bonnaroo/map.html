@@ -269,11 +269,6 @@
     dot.className = 'status-dot active';
     statusText.textContent = `±${Math.round(accuracy)}m`;
     if (!mapCentered) { map.setView([lat, lng], 16); mapCentered = true; }
-    fetch('/bonnaroo/api/location/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-      body: JSON.stringify({ lat, lng }),
-    });
   }
 
   function onError(err) {
@@ -281,7 +276,17 @@
     statusText.textContent = err.code === 1 ? 'location denied' : 'unavailable';
   }
 
+  function postLocation() {
+    if (myLat === null || myLng === null) return;
+    fetch('/bonnaroo/api/location/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ lat: myLat, lng: myLng }),
+    });
+  }
+
   navigator.geolocation?.watchPosition(onPosition, onError, { enableHighAccuracy: true, timeout: 10000 });
+  setInterval(postLocation, 10000);
 
   // ── Math ─────────────────────────────────────────────────
   function getBearing(lat1, lng1, lat2, lng2) {
