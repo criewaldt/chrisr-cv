@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'chrisr',
     'resume',
     'bonnaroo',
+    'reimbursable',
 
     'rest_framework',
     'django_celery_results',

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reimbursable - Split Costs</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 48px;
+      max-width: 460px;
+      width: 100%;
+    }
+
+    .logo { font-size: 48px; margin-bottom: 8px; text-align: center; }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+      background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: inherit;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #4ecdc4;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .hint { color: #666; font-size: 0.8rem; margin-top: -16px; margin-bottom: 20px; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+      color: #111;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(78, 205, 196, 0.3);
+    }
+
+    .error {
+      background: rgba(255, 75, 75, 0.1);
+      border: 1px solid rgba(255, 75, 75, 0.3);
+      color: #ff6b6b;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">&#x1f4b0;</div>
+    <h1>Reimbursable</h1>
+    <p class="subtitle">Split expenses with friends. No sign-up required.</p>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label for="name">Session Name</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Weekend Trip" value="{{ name|default:'' }}" required maxlength="200" />
+
+      <label for="participants">Participants</label>
+      <input type="text" id="participants" name="participants" placeholder="e.g. Alice, Bob, Charlie" value="{{ participants|default:'' }}" required />
+      <p class="hint">Comma-separated names (at least 2)</p>
+
+      <button type="submit" class="btn">Create Session</button>
+    </form>
+  </div>
+</body>
+</html>

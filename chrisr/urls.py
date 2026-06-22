@@ -26,5 +26,6 @@ urlpatterns = [
     path('send-email/', SendEmailView, name='send-email'),
 
     path('bonnaroo/', include('bonnaroo.urls')),
+    path('reimbursable/', include('reimbursable.urls')),
     path('social/', include('social_django.urls', namespace='social')),
 ]
