@@ -34,6 +34,30 @@
 			margin: 0 5px;
 		}
 
+		/* let the header band grow for the download button */
+		.resume-header {
+			height: auto;
+			min-height: 220px;
+		}
+
+		.resume-header .download-pdf-btn {
+			display: inline-block;
+			background: #fff;
+			color: #434E5E;
+			font-size: 0.875rem;
+			font-weight: 700;
+			letter-spacing: 0.03rem;
+			padding: 0.4rem 0.9rem;
+			border: 0;
+			border-radius: 0.125rem;
+		}
+
+		.resume-header .download-pdf-btn:hover,
+		.resume-header .download-pdf-btn:focus {
+			background: #e9edf2;
+			color: #2f3742;
+		}
+
 	</style>
 
 </head> 
@@ -64,9 +88,11 @@
 								</ul>
 								<br>
 								<ul class="resume-social list-unstyled">
-									<li class="mb-3"><a class="text-link" href="https://github.com/criewaldt/chrisr-cv"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>Dynamic DRF CV Website: GitHub</a></li>
 									<li class="mb-3"><a class="text-link" href="?json"><span class="fa-container text-center me-2"><i class="fas fa-code fa-fw"></i></span>View as JSON</a></li>
 								</ul>
+								<a class="btn btn-light btn-sm download-pdf-btn" href="{% url 'resume-pdf' %}" download>
+									<i class="fas fa-file-pdf me-2"></i>Download PDF
+								</a>
 						    </div><!--//secondary-info-->
 					    </div><!--//row-->
 					    

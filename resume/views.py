@@ -6,8 +6,11 @@ from .models import Resume
 from .serializers import ResumeSerializer
 from .permissions import IsAdminOrReadOnly
 
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
+from django.utils.text import slugify
+
 from .merge_fields import generate_cv
+from .pdf import DEFAULT_MAX_PAGES, render_resume_pdf
 
 class ResumeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
@@ -20,6 +23,30 @@ class ResumeViewSet(viewsets.ModelViewSet):
         else:
             queryset = self.filter_queryset(self.get_queryset())
             return render(request, 'index.html', {'resume': queryset})
+
+
+def ResumePDFView(request):
+    """Serve the stored resume data as a downloadable PDF.
+
+    ``?pages=N`` sets the page budget the type is fitted to (1-3, default 2).
+    """
+    resume = Resume.objects.select_related('professional_summary').prefetch_related(
+        'employment_history', 'education', 'awards', 'keywords'
+    ).first()
+
+    if resume is None:
+        raise Http404('No resume has been created yet.')
+
+    try:
+        max_pages = min(3, max(1, int(request.GET.get('pages', DEFAULT_MAX_PAGES))))
+    except ValueError:
+        max_pages = DEFAULT_MAX_PAGES
+
+    pdf = render_resume_pdf(resume, max_pages=max_pages)
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'{slugify(resume.name) or "resume"}-resume.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 
 from .tasks import send_celery_email
