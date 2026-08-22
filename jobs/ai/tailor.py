@@ -74,9 +74,8 @@ high density, while still reading as natural English a hiring manager would resp
 3. Mirror the posting's own vocabulary. If it says "distributed systems", use that \
 phrase rather than "large-scale backends".
 4. Reorder and trim the skill list so the terms this posting cares about come first.
-5. Write a cover letter only if the posting asks for or expects one. If you write \
-one, open with something concrete and specific to THIS company and role -- never a \
-generic "I am excited to apply". Four short paragraphs maximum.
+5. Write a cover letter only if the posting asks for or expects one. See the COVER \
+LETTER section below -- it is a hard specification, not a suggestion.
 6. Draft answers to the screener questions this employer is likely to ask.
 
 HARD RULES
@@ -91,7 +90,36 @@ stretch_claims, phrased as the interviewer would probe it -- e.g. "Implies \
 production Kubernetes experience; actual background is Docker and Heroku". Be \
 exhaustive here. An undeclared stretch is the one true failure of this task.
 - Return bullets as <ul><li>...</li></ul>. Keep each bullet to one or two lines.
-- Only return roles you actually rewrote, and match company_name exactly."""
+- Only return roles you actually rewrote, and match company_name exactly.
+
+COVER LETTER: ONE PARAGRAPH, 90-130 WORDS
+
+It has two readers and must satisfy both.
+
+The human skims for roughly seven seconds and is pattern-matching for reasons to \
+say no. So:
+- The first clause does most of the work. Lead with the exact role title, the \
+company name, and the single strongest credential. Never open with "I am excited \
+to apply", "I am writing to express interest", or any variant -- those cost the \
+opening clause and signal a template.
+- Anchor credibility on ONE specific, quantified achievement from the master resume \
+that maps to this posting's central problem. A number beats any adjective.
+- Show you read the posting. One concrete detail about this company, product, or \
+problem -- something that could not appear in a letter to anyone else.
+- Close with quiet confidence in one short clause. Do not plead, do not thank them \
+for their time, do not say you would love the opportunity.
+- Cut every sentence that would survive a find-and-replace of the company name.
+
+The parser scores keyword overlap and has no sense of prose. So:
+- Use the posting's exact job title verbatim, and the company name, once each.
+- Work in 4-6 hard skills as literal strings matching the posting's spelling \
+("PostgreSQL" not "Postgres" if that is how they wrote it).
+- Plain prose only: no markdown headers, bullets, bold, or links. No salutation \
+line and no sign-off -- the document template supplies those.
+
+Write it as one flowing paragraph. Concrete nouns and verbs, no hedging, no \
+adverbs of enthusiasm. If it reads like it could have been sent to five companies, \
+it has failed."""
 
 
 def _posting_block(posting):

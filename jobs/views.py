@@ -19,6 +19,7 @@ from django.views.decorators.http import require_POST
 
 from resume.pdf import PROFILE_LINKS, render_resume_pdf
 
+from .cover_pdf import render_cover_letter_pdf
 from .docx_export import render_resume_docx
 
 from .models import (ApplicantProfile, ApplicationEvent, JobPosting, JobSource,
@@ -225,6 +226,25 @@ def resume_docx(request, pk):
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     name = slugify(f'{view.name}-{posting.company}-{posting.title}')[:80] or 'resume'
     response['Content-Disposition'] = f'attachment; filename="{name}.docx"'
+    return response
+
+
+@staff_member_required
+def cover_pdf(request, pk):
+    """Cover letter on the same letterhead as the resume."""
+    posting = get_object_or_404(JobPosting, pk=pk)
+    application = posting.current_application
+    if application is None or application.state != TailoredApplication.READY:
+        raise Http404('This job has not been prepped yet.')
+    if not application.cover_letter_md.strip():
+        raise Http404('No cover letter was generated for this posting.')
+
+    view = TailoredResumeView.from_json(application.resume_json)
+    pdf = render_cover_letter_pdf(view, posting, application.cover_letter_md,
+                                  ApplicantProfile.active())
+    response = HttpResponse(pdf, content_type='application/pdf')
+    name = slugify(f'{view.name}-{posting.company}-cover-letter')[:80] or 'cover-letter'
+    response['Content-Disposition'] = f'attachment; filename="{name}.pdf"'
     return response
 
 

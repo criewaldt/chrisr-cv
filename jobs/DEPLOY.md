@@ -60,12 +60,24 @@ manage.py jobs_run {morning|midday|evening} [--force] [--skip-email] [--limit N]
 Roughly **$7/mo triage + $0.12 per application you prep**. At 15 applications/day
 that is about $55/mo; the only real dial is how many you prep.
 
-## Known gaps
+## Scope note: no autofill
 
-- Autofill bookmarklet is not built. The kit gives you the PDF/DOCX, cover letter,
-  and screener answers to paste.
-- A prep in flight is lost if the dyno restarts. The row shows as stale with a retry
-  path rather than spinning forever.
+Form autofill was considered and deliberately dropped. Chris fills the online forms
+himself. The kit's job is to make that fast, not to automate it:
+
+- tailored resume as PDF and DOCX, one click each
+- cover letter in an editable box (only when the posting expects one)
+- screener answers pre-drafted for the questions this employer is likely to ask
+- the "Be ready to defend" list, so nothing on the resume is a surprise later
+
+This also removes the need for `django-cors-headers` and a browser extension, and
+sidesteps the fact that browsers block JavaScript from attaching a resume file
+anyway — the part of an application that actually takes the longest.
+
+## Known gap
+
+A prep in flight is lost if the dyno restarts. The row shows as stale with a retry
+path rather than spinning forever. See the ephemeral-filesystem section above.
 
 ## Heroku's ephemeral filesystem
 

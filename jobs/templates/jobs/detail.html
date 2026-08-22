@@ -50,6 +50,9 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <a class="btn" href="{% url 'jobs:resume-pdf' posting.pk %}">Resume (PDF)</a>
       <a class="btn" href="{% url 'jobs:resume-docx' posting.pk %}">Resume (DOCX)</a>
+      {% if application.cover_letter_md %}
+        <a class="btn" href="{% url 'jobs:cover-pdf' posting.pk %}">Cover letter (PDF)</a>
+      {% endif %}
     </div>
     {% if application.stretch_claims %}
       <div class="banner warn" style="margin:0 0 12px">

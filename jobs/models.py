@@ -78,7 +78,7 @@ class SearchProfile(models.Model):
 
 
 class ApplicantProfile(models.Model):
-    """Standing answers reused across every application. Feeds screener autofill."""
+    """Standing answers reused across every application. Feeds the pre-drafted screener answers in the kit."""
 
     is_active = models.BooleanField(default=True)
 
@@ -94,11 +94,11 @@ class ApplicantProfile(models.Model):
     portfolio_url = models.URLField(blank=True, default='')
     references_note = models.TextField(blank=True, default='')
 
-    # EEO / demographic answers are optional on most ATS forms; stored so autofill
+    # EEO / demographic answers are optional on most ATS forms; stored so the kit
     # can answer consistently rather than leaving Chris to re-decide each time.
     eeo_answers = models.JSONField(default=_dict, blank=True)
     extra_answers = models.JSONField(default=_dict, blank=True,
-                                     help_text='Freeform question -> answer bank the autofill draws from.')
+                                     help_text='Freeform question -> answer bank the screener drafting draws from.')
 
     updated_at = models.DateTimeField(auto_now=True)
 

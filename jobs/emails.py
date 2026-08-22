@@ -114,8 +114,14 @@ def send_digest(slot, to=None, now=None, dry_run=False):
     if dry_run:
         return record, body
 
-    recipient = to or getattr(settings, 'JOBS_DIGEST_TO', None) or settings.EMAIL_HOST_USER
-    sender = settings.EMAIL_HOST_USER or 'criewaldt@gmail.com'
+    recipient = to or getattr(settings, 'JOBS_DIGEST_TO', '') or settings.EMAIL_HOST_USER
+    sender = settings.EMAIL_HOST_USER or recipient
+    if not recipient:
+        # Without this the send is handed [None] and fails deep inside smtplib with
+        # nothing pointing at the actual cause.
+        raise RuntimeError(
+            'No digest recipient. Set JOBS_DIGEST_TO, or GMAIL_USER which it falls '
+            'back to. Everything else in the cycle already ran and was saved.')
     message = EmailMultiAlternatives(subject_for(data), body, sender, [recipient])
     message.send()
     record.save()
