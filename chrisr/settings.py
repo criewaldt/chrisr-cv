@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'resume',
     'bonnaroo',
     'reimbursable',
+    'jobs',
 
     'rest_framework',
     'django_celery_results',
@@ -192,3 +193,17 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_CONTENT_ENCODING = 'utf-8'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
+# --- jobs app -------------------------------------------------------------
+# Tier 1 triage is high-volume classification; tier 2 tailoring produces the
+# document Chris actually submits. Spend accordingly. Both are overridable by
+# env var so either stage can be re-pointed without a code change.
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+JOBS_TRIAGE_MODEL = os.environ.get('JOBS_TRIAGE_MODEL', 'claude-haiku-4-5')
+JOBS_TAILOR_MODEL = os.environ.get('JOBS_TAILOR_MODEL', 'claude-opus-5')
+JOBS_TRIAGE_CONCURRENCY = int(os.environ.get('JOBS_TRIAGE_CONCURRENCY', '6'))
+JOBS_TAILOR_EFFORT = os.environ.get('JOBS_TAILOR_EFFORT', 'medium')
+
+# Where digests go, and the base URL their deep links point at. Falls back to the
+# Gmail sender so a missing config var still reaches an inbox rather than nowhere.
+JOBS_DIGEST_TO = os.environ.get('JOBS_DIGEST_TO', '') or EMAIL_HOST_USER
+JOBS_SITE_URL = os.environ.get('JOBS_SITE_URL', 'https://chrisriewaldt.com').rstrip('/')

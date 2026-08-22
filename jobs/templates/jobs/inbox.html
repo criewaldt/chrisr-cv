@@ -1,0 +1,83 @@
+{% extends "jobs/base.html" %}
+{% block title %}Inbox — Jobs{% endblock %}
+{% block heading %}Inbox{% endblock %}
+{% block subhead %}
+  showing {{ rows|length }} of {{ total }}{% if profile.daily_application_target %} ·
+  target {{ profile.daily_application_target }} applications/day{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if pending_triage %}
+  <div class="banner warn">
+    <b>{{ pending_triage }}</b> posting{{ pending_triage|pluralize }} not yet scored — shown below with an
+    <span class="tag est">est</span> keyword estimate instead of a real fit score.
+    Run <code>manage.py jobs_triage --days 7</code> to score them.
+  </div>
+{% endif %}
+
+<form method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+  <input type="text" name="q" value="{{ q }}" placeholder="title or company…" style="flex:1;min-width:200px">
+  <select name="status">
+    <option value="open"{% if status == 'open' %} selected{% endif %}>Open</option>
+    <option value="any"{% if status == 'any' %} selected{% endif %}>All statuses</option>
+    <option value="applied"{% if status == 'applied' %} selected{% endif %}>Applied</option>
+    <option value="shortlisted"{% if status == 'shortlisted' %} selected{% endif %}>Shortlisted</option>
+    <option value="dismissed"{% if status == 'dismissed' %} selected{% endif %}>Dismissed</option>
+  </select>
+  <button type="submit">Filter</button>
+</form>
+
+{% for score, p, is_real in rows %}
+  <div class="card">
+    <div class="score {% if score >= 70 %}s-hi{% elif score >= 45 %}s-mid{% else %}s-lo{% endif %}">
+      <b>{{ score }}</b>
+      <span>{% if is_real %}fit{% else %}est{% endif %}</span>
+    </div>
+    <div class="grow">
+      <h3><a href="{% url 'jobs:detail' p.pk %}">{{ p.title }}</a></h3>
+      <div class="meta">
+        <span>{{ p.company }}</span>
+        {% if p.location %}<span>{{ p.location|truncatechars:38 }}</span>{% endif %}
+        {% if p.is_remote %}<span class="tag">remote</span>{% endif %}
+        {% if p.salary_display %}<span class="sal">{{ p.salary_display }}</span>{% endif %}
+        <span class="tag">{{ p.source.kind }}</span>
+        {% if p.status != 'scored' %}<span class="tag">{{ p.get_status_display }}</span>{% endif %}
+        <span class="muted">{{ p.posted_at|timesince|default:"—" }} old</span>
+      </div>
+      {% if p.score %}
+        <div class="why">{{ p.score.reasoning }}</div>
+        <div class="chips">
+          {% for k in p.score.matched_keywords|slice:":7" %}<span class="chip">{{ k }}</span>{% endfor %}
+          {% for k in p.score.missing_keywords|slice:":3" %}<span class="chip miss">{{ k }}</span>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:6px">
+      <a class="btn" href="{% url 'jobs:detail' p.pk %}">Open</a>
+      {% if p.status == 'prepped' %}
+        <a class="btn" href="{% url 'jobs:resume-pdf' p.pk %}">Resume ↓</a>
+      {% endif %}
+      <form method="post" action="{% url 'jobs:set-status' p.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="dismissed">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="btn ghost" style="width:100%">Dismiss</button>
+      </form>
+    </div>
+  </div>
+{% empty %}
+  <div class="banner">Nothing here. Run <code>manage.py jobs_discover</code> to pull new postings.</div>
+{% endfor %}
+
+{% if hidden %}
+  <div class="banner">
+    <b>{{ hidden }}</b> more below your daily inbox size of {{ profile.daily_inbox_size }}.
+    They stay queued and compete on score next run — nothing expires.
+    <a href="?all=1&amp;status={{ status }}&amp;q={{ q }}">Show all</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block foot %}
+  Discovery is wide on purpose; the inbox is capped at what you can act on in a day.
+{% endblock %}

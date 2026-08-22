@@ -28,5 +28,6 @@ urlpatterns = [
 
     path('bonnaroo/', include('bonnaroo.urls')),
     path('reimbursable/', include('reimbursable.urls')),
+    path('jobs/', include('jobs.urls')),
     path('social/', include('social_django.urls', namespace='social')),
 ]

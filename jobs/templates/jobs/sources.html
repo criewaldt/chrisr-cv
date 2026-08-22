@@ -1,0 +1,31 @@
+{% extends "jobs/base.html" %}
+{% block title %}Sources — Jobs{% endblock %}
+{% block heading %}Sources{% endblock %}
+{% block subhead %}{{ sources|length }} configured{% endblock %}
+
+{% block content %}
+<div class="banner">
+  A board that quietly stops returning jobs is invisible otherwise. Any source failing
+  5 runs in a row auto-disables; re-enable it from the admin once it's fixed.
+</div>
+<table>
+  <tr>
+    <th>Source</th><th>Kind</th><th class="num">Postings</th><th class="num">Passed filter</th>
+    <th>Last success</th><th>Status</th>
+  </tr>
+  {% for s in sources %}
+    <tr>
+      <td>{{ s.label|default:s.config }}</td>
+      <td class="muted">{{ s.kind }}</td>
+      <td class="num">{{ s.n_postings }}</td>
+      <td class="num {% if s.n_survivors %}ok{% else %}muted{% endif %}">{{ s.n_survivors }}</td>
+      <td class="muted">{% if s.last_success_at %}{{ s.last_success_at|timesince }} ago{% else %}never{% endif %}</td>
+      <td>
+        {% if not s.enabled %}<span class="bad">disabled</span>
+        {% elif s.consecutive_failures %}<span class="bad">{{ s.consecutive_failures }} fails</span>
+        {% else %}<span class="ok">ok</span>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

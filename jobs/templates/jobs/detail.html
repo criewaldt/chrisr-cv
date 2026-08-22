@@ -1,0 +1,149 @@
+{% extends "jobs/base.html" %}
+{% block title %}{{ posting.title }} — {{ posting.company }}{% endblock %}
+{% block heading %}{{ posting.company }}{% endblock %}
+{% block subhead %}{{ posting.get_status_display }}{% endblock %}
+
+{% block content %}
+<div class="card" style="display:block">
+  <h2 style="font-size:1.15rem;margin-bottom:6px">{{ posting.title }}</h2>
+  <div class="meta" style="margin-bottom:10px">
+    <span>{{ posting.company }}</span>
+    {% if posting.location %}<span>{{ posting.location }}</span>{% endif %}
+    {% if posting.is_remote %}<span class="tag">remote</span>{% endif %}
+    {% if posting.salary_display %}<span class="sal">{{ posting.salary_display }}</span>{% endif %}
+    <span class="tag">{{ posting.source.kind }}</span>
+    {% if posting.posted_at %}<span class="muted">posted {{ posting.posted_at|timesince }} ago</span>{% endif %}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="btn" href="{{ posting.url }}" target="_blank" rel="noopener">Open posting ↗</a>
+    {% for u in posting.alt_urls %}
+      <a class="btn ghost" href="{{ u }}" target="_blank" rel="noopener">Also listed ↗</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if score %}
+<div class="card" style="display:block">
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px">
+    <span class="{% if score.fit_score >= 70 %}s-hi{% elif score.fit_score >= 45 %}s-mid{% else %}s-lo{% endif %}"
+          style="font-size:1.6rem;font-weight:700">{{ score.fit_score }}</span>
+    <span class="tag">{{ score.verdict }}</span>
+    <span class="muted" style="font-size:.75rem">{{ score.model_used }} · ${{ score.cost_usd }}</span>
+  </div>
+  <p style="font-size:.9rem;color:#c5c5c5">{{ score.reasoning }}</p>
+  <div class="chips" style="margin-top:10px">
+    {% for k in score.matched_keywords %}<span class="chip">{{ k }}</span>{% endfor %}
+    {% for k in score.missing_keywords %}<span class="chip miss">missing: {{ k }}</span>{% endfor %}
+  </div>
+  {% if score.red_flags %}
+    <div style="margin-top:10px;font-size:.83rem;color:#d0a08a">
+      <b>Red flags:</b>
+      <ul style="margin:4px 0 0 18px">{% for f in score.red_flags %}<li>{{ f }}</li>{% endfor %}</ul>
+    </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if application and application.state == 'ready' %}
+  <div class="card" style="display:block">
+    <h3 style="margin-bottom:8px">Application kit</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <a class="btn" href="{% url 'jobs:resume-pdf' posting.pk %}">Resume (PDF)</a>
+      <a class="btn" href="{% url 'jobs:resume-docx' posting.pk %}">Resume (DOCX)</a>
+    </div>
+    {% if application.stretch_claims %}
+      <div class="banner warn" style="margin:0 0 12px">
+        <b>Be ready to defend.</b> These claims go beyond your master resume:
+        <ul style="margin:6px 0 0 18px">
+          {% for c in application.stretch_claims %}<li>{{ c }}</li>{% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% if application.cover_letter_md %}
+      <h4 style="font-size:.85rem;color:#8a8a8a;margin-bottom:6px">Cover letter</h4>
+      <textarea readonly style="width:100%;height:220px;background:#0f0f0f;border:1px solid #262626;
+        border-radius:8px;color:#d5d5d5;padding:11px;font-size:.83rem;font-family:inherit"
+      >{{ application.cover_letter_md }}</textarea>
+    {% endif %}
+  </div>
+{% elif application and application.state == 'pending' %}
+  <div class="banner">Tailoring in progress…{% if application.is_stale %}
+    this looks stuck — the process was likely restarted. Re-run it.{% endif %}</div>
+{% elif application and application.state == 'failed' %}
+  <div class="banner warn">Tailoring failed: {{ application.error|truncatechars:200 }}</div>
+{% else %}
+  <div class="banner" id="prep-box">
+    Not prepped yet. Tailoring runs on demand — that's what keeps the bill small.
+    <form method="post" action="{% url 'jobs:prep' posting.pk %}" style="margin-top:10px" id="prep-form">
+      {% csrf_token %}
+      <button type="submit">Prep this job (~$0.12)</button>
+    </form>
+  </div>
+{% endif %}
+
+<script>
+(function () {
+  var form = document.getElementById('prep-form');
+  var box  = document.getElementById('prep-box');
+  if (!form) return;
+  var statusUrl = "{% url 'jobs:prep-status' posting.pk %}";
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    fetch(form.action, {
+      method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: new FormData(form)
+    }).then(function () {
+      box.innerHTML = '<b>Tailoring…</b> takes 40-60s. Safe to leave this page — ' +
+                      'it runs server-side and the result is saved.';
+      poll();
+    });
+  });
+
+  // The work happens in a background thread, so the page polls rather than
+  // holding a request open past Heroku's 30s router timeout.
+  function poll() {
+    setTimeout(function () {
+      fetch(statusUrl).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.state === 'ready')  { location.reload(); return; }
+        if (d.state === 'failed') { box.innerHTML = 'Tailoring failed: ' + d.error; return; }
+        if (d.state === 'stale')  {
+          box.innerHTML = 'That prep stalled (the server likely restarted mid-run). ' +
+                          '<a href="">Reload and retry</a>.';
+          return;
+        }
+        poll();
+      }).catch(poll);
+    }, 2500);
+  }
+})();
+</script>
+
+<div class="card" style="display:block">
+  <h3 style="margin-bottom:8px;font-size:.95rem">Status</h3>
+  <form method="post" action="{% url 'jobs:set-status' posting.pk %}"
+        style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    {% csrf_token %}
+    <select name="status">
+      {% for value, label in statuses %}
+        <option value="{{ value }}"{% if value == posting.status %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="note" placeholder="note (optional)" style="flex:1;min-width:180px">
+    <button type="submit">Update</button>
+  </form>
+  {% if events %}
+    <table style="margin-top:12px">
+      {% for e in events %}
+        <tr><td class="muted" style="width:150px">{{ e.occurred_at|date:"M j, Y H:i" }}</td>
+            <td>{{ e.status }}</td><td class="muted">{{ e.note }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+</div>
+
+<div class="card" style="display:block">
+  <h3 style="margin-bottom:8px;font-size:.95rem">Posting</h3>
+  <div style="font-size:.85rem;color:#b5b5b5;max-height:460px;overflow:auto;white-space:pre-wrap"
+  >{{ posting.description_text|truncatechars:9000 }}</div>
+</div>
+{% endblock %}

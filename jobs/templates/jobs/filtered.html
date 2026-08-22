@@ -1,0 +1,38 @@
+{% extends "jobs/base.html" %}
+{% block title %}Filtered out — Jobs{% endblock %}
+{% block heading %}Filtered out{% endblock %}
+{% block subhead %}{{ total }} rejected for free, before any AI cost{% endblock %}
+
+{% block content %}
+<div class="banner warn">
+  These were rejected by deterministic rules, not by AI. Over-filtering is the way this
+  system fails silently — a bad rule hides good jobs and looks like a slow market.
+  Skim this page occasionally; if something here should have made the inbox, the rule
+  that caught it needs changing.
+</div>
+
+<table style="margin-bottom:24px">
+  <tr><th>Reason</th><th class="num">Count</th></tr>
+  {% for reason, n in buckets %}
+    <tr>
+      <td><a href="?reason={{ reason|urlencode }}">{{ reason }}</a></td>
+      <td class="num">{{ n }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% if reason %}<div class="banner">Showing <b>{{ reason }}</b> ·
+  <a href="{% url 'jobs:filtered' %}">clear</a></div>{% endif %}
+
+<table>
+  <tr><th>Title</th><th>Company</th><th>Location</th><th>Why rejected</th></tr>
+  {% for p in postings %}
+    <tr>
+      <td><a href="{{ p.url }}" target="_blank" rel="noopener">{{ p.title|truncatechars:52 }}</a></td>
+      <td class="muted">{{ p.company|truncatechars:22 }}</td>
+      <td class="muted">{{ p.location|truncatechars:24|default:"—" }}</td>
+      <td class="muted">{{ p.filter_reason }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}
