@@ -24,8 +24,11 @@ from .docx_export import render_resume_docx
 
 from .models import (ApplicantProfile, ApplicationEvent, JobPosting, JobSource,
                      SearchProfile, TailoredApplication)
+from .fetch import (current_run, estimated_triage_cost, last_finished,
+                    pending_triage_count, start_fetch, start_score_all)
 from .prep import start_prep
 from .ranking import rank
+from .spend import posting_cost, summary as spend_summary
 from .resume_view import TailoredResumeView, master_resume_json
 
 ACTIONABLE = ('scored', 'shortlisted', 'prepped')
@@ -73,7 +76,8 @@ def inbox(request):
     limit = None if show_all else profile.daily_inbox_size
     rows = ([(p.score.fit_score, p, True) for p in scored]
             + [(s, p, False) for s, p in ranked_unscored])
-    visible = rows[:limit] if limit else rows
+    visible = [(score, p, is_real) + posting_cost(p) for score, p, is_real in
+               (rows[:limit] if limit else rows)]
 
     return render(request, 'jobs/inbox.html', {
         'rows': visible,
@@ -86,6 +90,10 @@ def inbox(request):
         'counts': _counts(),
         'pending_triage': JobPosting.objects.filter(
             status=JobPosting.STATUS_NEW, score__isnull=True).count(),
+        'last_run': last_finished(),
+        'running': current_run(),
+        'est_cost': estimated_triage_cost(),
+        'spend': spend_summary(),
     })
 
 
@@ -93,6 +101,49 @@ def _counts():
     rows = (JobPosting.objects.values('status')
             .annotate(n=Count('id')).order_by('-n'))
     return {r['status']: r['n'] for r in rows}
+
+
+@staff_member_required
+@require_POST
+def fetch(request):
+    """Sweep every enabled board, then score whatever survives the pre-filter."""
+    run, started = start_fetch()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'state': 'running', 'run_id': run.pk,
+                             'started': started}, status=202)
+    return redirect('jobs:inbox')
+
+
+@staff_member_required
+@require_POST
+def score_all(request):
+    """Score every pending posting, ignoring the per-run cap."""
+    run, started = start_score_all()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'state': 'running', 'run_id': run.pk,
+                             'started': started}, status=202)
+    return redirect('jobs:inbox')
+
+
+@staff_member_required
+def fetch_status(request):
+    """Poll target for the fetch button."""
+    run = current_run()
+    if run is not None:
+        return JsonResponse({
+            'state': 'running',
+            'elapsed': int((timezone.now() - run.started_at).total_seconds()),
+        })
+    done = last_finished()
+    if done is None:
+        return JsonResponse({'state': 'idle'})
+    return JsonResponse({
+        'state': 'done',
+        'found': done.found, 'new': done.new, 'filtered': done.filtered,
+        'scored': done.scored, 'cost': str(done.cost_usd),
+        'errors': len(done.errors or []),
+        'finished': done.finished_at.isoformat() if done.finished_at else None,
+    })
 
 
 @staff_member_required

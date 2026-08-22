@@ -6,6 +6,9 @@ app_name = 'jobs'
 
 urlpatterns = [
     path('', views.inbox, name='inbox'),
+    path('fetch/', views.fetch, name='fetch'),
+    path('fetch/status/', views.fetch_status, name='fetch-status'),
+    path('score-all/', views.score_all, name='score-all'),
     path('filtered/', views.filtered, name='filtered'),
     path('sources/', views.sources, name='sources'),
     path('job/<int:pk>/', views.detail, name='detail'),

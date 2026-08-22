@@ -7,6 +7,56 @@
 {% endblock %}
 
 {% block content %}
+<div class="card" style="display:block;margin-bottom:10px">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <form method="post" action="{% url 'jobs:fetch' %}" id="fetch-form" style="flex:0 0 auto">
+      {% csrf_token %}
+      <button type="submit" id="fetch-btn">Fetch new jobs</button>
+    </form>
+    <form method="post" action="{% url 'jobs:score-all' %}" id="score-form" style="flex:0 0 auto">
+      {% csrf_token %}
+      <button type="submit" id="score-btn" class="btn ghost"
+              {% if not pending_triage %}disabled style="opacity:.45;cursor:default"{% endif %}
+              {% if pending_triage %}onclick="return confirm('Score all {{ pending_triage }} pending postings? Estimated cost ${{ est_cost|floatformat:2 }}.')"{% endif %}>
+        Score all {{ pending_triage }} pending{% if pending_triage %} (~${{ est_cost|floatformat:2 }}){% endif %}
+      </button>
+    </form>
+  </div>
+  <div class="grow muted" id="fetch-status" style="font-size:.83rem;margin-top:10px">
+    {% if running %}
+      Sweeping boards… started {{ running.started_at|timesince }} ago.
+    {% elif last_run %}
+      Last run {{ last_run.finished_at|timesince }} ago —
+      {{ last_run.found }} fetched, <b>{{ last_run.new }} new</b>,
+      {{ last_run.filtered }} filtered free, {{ last_run.scored }} scored
+      (${{ last_run.cost_usd|floatformat:4 }}){% if last_run.errors %},
+      <span class="bad">{{ last_run.errors|length }} source error{{ last_run.errors|length|pluralize }}</span>{% endif %}.
+    {% else %}
+      Never run. Sweeps all enabled boards and scores whatever passes the pre-filter.
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="display:flex;gap:26px;flex-wrap:wrap;margin-bottom:16px;
+     align-items:baseline;font-size:.82rem">
+  <div><span class="muted">API spend</span>
+    <b class="ok" style="font-size:1.05rem;margin-left:6px">${{ spend.all_time.cost|floatformat:2 }}</b>
+    <span class="muted">all time</span></div>
+  <div><span class="muted">calls</span>
+    <b style="margin-left:5px">{{ spend.all_time.calls }}</b></div>
+  <div><span class="muted">triage</span>
+    <b style="margin-left:5px">{{ spend.all_time.triage_calls }}</b>
+    <span class="muted">× ${{ spend.avg_triage|floatformat:4 }} =
+      ${{ spend.all_time.triage_cost|floatformat:2 }}</span></div>
+  <div><span class="muted">tailoring</span>
+    <b style="margin-left:5px">{{ spend.all_time.tailor_calls }}</b>
+    <span class="muted">× ${{ spend.avg_tailor|floatformat:4 }} =
+      ${{ spend.all_time.tailor_cost|floatformat:2 }}</span></div>
+  <div><span class="muted">today</span>
+    <b style="margin-left:5px">${{ spend.today.cost|floatformat:2 }}</b>
+    <span class="muted">({{ spend.today.calls }} calls)</span></div>
+</div>
+
 {% if pending_triage %}
   <div class="banner warn">
     <b>{{ pending_triage }}</b> posting{{ pending_triage|pluralize }} not yet scored — shown below with an
@@ -27,7 +77,7 @@
   <button type="submit">Filter</button>
 </form>
 
-{% for score, p, is_real in rows %}
+{% for score, p, is_real, calls, cost in rows %}
   <div class="card">
     <div class="score {% if score >= 70 %}s-hi{% elif score >= 45 %}s-mid{% else %}s-lo{% endif %}">
       <b>{{ score }}</b>
@@ -43,6 +93,10 @@
         <span class="tag">{{ p.source.kind }}</span>
         {% if p.status != 'scored' %}<span class="tag">{{ p.get_status_display }}</span>{% endif %}
         <span class="muted">{{ p.posted_at|timesince|default:"—" }} old</span>
+        {% if calls %}
+          <span class="tag" title="{{ calls }} API call{{ calls|pluralize }} on this job">
+            ${{ cost|floatformat:4 }} · {{ calls }} call{{ calls|pluralize }}</span>
+        {% endif %}
       </div>
       {% if p.score %}
         <div class="why">{{ p.score.reasoning }}</div>
@@ -80,4 +134,58 @@
 
 {% block foot %}
   Discovery is wide on purpose; the inbox is capped at what you can act on in a day.
+{% endblock %}
+
+{% block extra %}{% endblock %}
+
+{% block script %}
+<script>
+(function () {
+  var form = document.getElementById('fetch-form');
+  var btn  = document.getElementById('fetch-btn');
+  var out  = document.getElementById('fetch-status');
+  if (!form) return;
+  var statusUrl = "{% url 'jobs:fetch-status' %}";
+
+  function submitAsync(theForm, theBtn, busyLabel, note) {
+    theForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (theBtn.disabled) return;
+      theBtn.disabled = true;
+      theBtn.textContent = busyLabel;
+      out.innerHTML = note;
+      fetch(theForm.action, {
+        method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: new FormData(theForm)
+      }).then(poll).catch(poll);
+    });
+  }
+
+  submitAsync(form, btn, 'Fetching…', 'Sweeping every enabled board…');
+
+  var scoreForm = document.getElementById('score-form');
+  var scoreBtn  = document.getElementById('score-btn');
+  if (scoreForm && scoreBtn && !scoreBtn.disabled) {
+    submitAsync(scoreForm, scoreBtn, 'Scoring…', 'Scoring every pending posting…');
+  }
+
+  // The sweep plus triage runs well past Heroku's 30s router timeout, so the work
+  // is backgrounded and this polls for the outcome.
+  function poll() {
+    setTimeout(function () {
+      fetch(statusUrl).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.state === 'running') {
+          out.innerHTML = 'Sweeping boards and scoring… ' + d.elapsed + 's';
+          poll();
+          return;
+        }
+        // A finished run means new cards; reload rather than patch the DOM.
+        location.reload();
+      }).catch(poll);
+    }, 3000);
+  }
+
+  {% if running %}poll();{% endif %}
+})();
+</script>
 {% endblock %}

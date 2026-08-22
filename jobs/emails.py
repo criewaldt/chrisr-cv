@@ -15,7 +15,7 @@ from .models import ApplicationEvent, DigestSend, JobPosting, SearchProfile
 
 logger = logging.getLogger(__name__)
 
-SLOT_LABELS = {'morning': '8:30am', 'midday': '12pm', 'evening': '5pm'}
+SLOT_LABELS = {'cli': 'manual', 'manual': 'manual'}
 SITE = getattr(settings, 'JOBS_SITE_URL', 'https://chrisriewaldt.com')
 
 
@@ -69,14 +69,13 @@ def render_text(data):
     else:
         lines += ['APPLIED SINCE LAST EMAIL: none.', '']
 
-    if data['slot'] == 'evening':
-        lines += _day_wrap(data)
+    lines += _day_wrap(data)
     lines.append(f"{SITE}/jobs/")
     return '\n'.join(lines)
 
 
 def _day_wrap(data):
-    """The 5pm edition closes the day out with totals."""
+    """Today's totals, appended to every digest."""
     today = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
     found = JobPosting.objects.filter(discovered_at__gte=today).count()
     filtered = JobPosting.objects.filter(discovered_at__gte=today, status='filtered').count()
@@ -89,8 +88,8 @@ def _day_wrap(data):
 
 
 def subject_for(data):
-    return (f"Jobs {SLOT_LABELS.get(data['slot'], data['slot'])} — "
-            f"{len(data['new_jobs'])} new, {len(data['applied'])} applied")
+    return (f"Jobs — {len(data['new_jobs'])} new, "
+            f"{len(data['applied'])} applied since last digest")
 
 
 def send_digest(slot, to=None, now=None, dry_run=False):

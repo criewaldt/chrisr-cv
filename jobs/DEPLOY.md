@@ -4,16 +4,17 @@
 
 ```bash
 heroku config:set ANTHROPIC_API_KEY=sk-ant-...
-heroku config:set JOBS_DIGEST_TO=criewaldt@gmail.com
 heroku config:set JOBS_SITE_URL=https://chrisriewaldt.com
+# only needed if you use `jobs_run --email`
+heroku config:set JOBS_DIGEST_TO=criewaldt@gmail.com
 # optional overrides (defaults shown)
 heroku config:set JOBS_TRIAGE_MODEL=claude-haiku-4-5
 heroku config:set JOBS_TAILOR_MODEL=claude-opus-5
 heroku config:set JOBS_TAILOR_EFFORT=medium
 ```
 
-`GMAIL_USER` / `GMAIL_PW` must already be set for digests to send — they drive the
-existing SMTP config in settings.py.
+`GMAIL_USER` / `GMAIL_PW` are only needed if you use `jobs_run --email`. The
+dashboard itself sends no mail.
 
 ## 2. Migrations
 
@@ -21,33 +22,32 @@ Already applied to the production CockroachDB (additive only: 9 new tables plus 
 fields on `jobs_searchprofile`). Nothing in `resume`, `bonnaroo`, or `reimbursable`
 was touched.
 
-## 3. Heroku Scheduler — six entries
+## 3. No scheduled tasks
 
-Scheduler is free but UTC-only, so each slot needs two entries; `jobs_run` guards on
-local time and on whether the slot already ran today, so exactly one of each pair
-does the work in any season.
+Fetching is manual: the **Fetch new jobs** button on the dashboard sweeps every
+enabled board and scores whatever passes the pre-filter. Nothing runs on a timer,
+so there is no Heroku Scheduler to configure and no add-on to provision.
 
-| Command | UTC time | Fires at |
-|---|---|---|
-| `python manage.py jobs_run morning` | 12:30 | 8:30am ET (EDT) |
-| `python manage.py jobs_run morning` | 13:30 | 8:30am ET (EST) |
-| `python manage.py jobs_run midday`  | 16:00 | 12:00pm ET (EDT) |
-| `python manage.py jobs_run midday`  | 17:00 | 12:00pm ET (EST) |
-| `python manage.py jobs_run evening` | 21:00 | 5:00pm ET (EDT) |
-| `python manage.py jobs_run evening` | 22:00 | 5:00pm ET (EST) |
+The sweep takes far longer than Heroku's 30s router timeout (~30s to fetch 182
+boards, plus triage), so the button starts a background thread and the page polls.
+The POST returns in well under a second. Pressing it twice reuses the run in
+flight rather than starting a second sweep.
 
-The off-season twin exits in ~3 seconds having done nothing.
-
-No worker dyno. Tailoring runs in a background thread inside the web dyno; the kit
-page polls for the result.
+No worker dyno. Tailoring uses the same background-thread pattern.
 
 ## Commands
+
+The dashboard button covers normal use. These are for the terminal:
 
 ```bash
 manage.py jobs_discover [--source KIND] [--config JSON] [--dry-run]
 manage.py jobs_triage [--days N] [--limit N] [--dry-run]
-manage.py jobs_run {morning|midday|evening} [--force] [--skip-email] [--limit N]
+manage.py jobs_run [--email] [--limit N] [--no-triage]
 ```
+
+`jobs_run` is the button's CLI equivalent. `--email` additionally sends a digest of
+what turned up — the button does not, since you are already looking at the inbox
+when you press it.
 
 ## Costs (measured, not estimated)
 
@@ -90,7 +90,7 @@ Nothing in this app writes to disk, so a dyno cycle loses nothing:
   letters, screener answers, digest history.
 - `collectstatic` runs at build time and whitenoise serves from the slug.
 
-**The one thing a dyno restart does cost** is a prep that is mid-flight. Tailoring
+**The one thing a dyno restart does cost** is a prep or a fetch that is mid-flight. Tailoring
 runs in a background thread inside the web dyno (no worker dyno by design), and
 Heroku cycles dynos at least daily. A killed prep leaves its row `pending`; after
 five minutes the kit page shows it as stale with a retry, rather than spinning
