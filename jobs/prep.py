@@ -69,7 +69,6 @@ def _run(application_id):
         application.cover_letter_needed = bool(result.cover_letter_needed)
         application.screener_answers = {a.question: a.answer for a in result.screener_answers}
         application.ats_keywords_used = result.ats_keywords_used
-        application.stretch_claims = result.stretch_claims
         application.model_used = _tailor_model()
         application.cost_usd = cost
         application.state = TailoredApplication.READY

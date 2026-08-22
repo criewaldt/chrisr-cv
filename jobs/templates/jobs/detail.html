@@ -54,14 +54,6 @@
         <a class="btn" href="{% url 'jobs:cover-pdf' posting.pk %}">Cover letter (PDF)</a>
       {% endif %}
     </div>
-    {% if application.stretch_claims %}
-      <div class="banner warn" style="margin:0 0 12px">
-        <b>Be ready to defend.</b> These claims go beyond your master resume:
-        <ul style="margin:6px 0 0 18px">
-          {% for c in application.stretch_claims %}<li>{{ c }}</li>{% endfor %}
-        </ul>
-      </div>
-    {% endif %}
     {% if application.cover_letter_md %}
       <div style="display:flex;align-items:baseline;justify-content:space-between;
                   gap:10px;flex-wrap:wrap;margin-bottom:6px">

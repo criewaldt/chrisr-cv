@@ -13,11 +13,15 @@ $25/1M, so returning ~1,500 tokens instead of ~4,000 roughly halves the bill. It
 is also more reliable: dates, employers, and job titles come from the database and
 cannot be hallucinated or dropped.
 
-*Stretch claims are tracked, not prevented.* Chris chose maximum keyword
-optimization, so the prompt is allowed to reach. Every claim that goes beyond the
-master resume must be declared in ``stretch_claims``, which the kit renders as a
-"Be ready to defend" panel. The reach is his call; being ambushed by it in an
-interview is not.
+*Maximum keyword optimization, no stretch readout.* The prompt is allowed to
+present real experience in the posting's language and to claim credible adjacent
+familiarity. It used to also return an exhaustive list of everything it reached on;
+that was dropped at Chris's request -- he reads his own resume and knows his own
+background, and the list was a sizeable share of the output tokens at $25/1M.
+
+The factual guardrails are independent of that and remain: employers, titles,
+locations, and dates come from the database and are never model-writable, and
+inventing a degree, certification, or metric is still forbidden.
 """
 import json
 import logging
@@ -53,8 +57,6 @@ class TailorResult(BaseModel):
         description='Master-resume skill names to keep, most relevant first.')
     ats_keywords_used: list[str] = Field(
         description='Keywords from the posting deliberately worked into the resume.')
-    stretch_claims: list[str] = Field(
-        description='Every claim that goes beyond the master resume. Be exhaustive and specific.')
     cover_letter_needed: bool = Field(description='Whether this posting asks for or expects one.')
     cover_letter_md: str = Field(description='Cover letter in plain markdown. Empty if not needed.')
     screener_answers: list[ScreenerAnswer] = Field(
@@ -85,10 +87,6 @@ database and are returned to you for context only.
 come from the master resume.
 - You MAY present his real experience in the posting's language, and you MAY claim \
 familiarity with adjacent tools where his actual experience makes that credible.
-- EVERY claim that is not directly supported by the master resume MUST appear in \
-stretch_claims, phrased as the interviewer would probe it -- e.g. "Implies \
-production Kubernetes experience; actual background is Docker and Heroku". Be \
-exhaustive here. An undeclared stretch is the one true failure of this task.
 - Return bullets as <ul><li>...</li></ul>. Keep each bullet to one or two lines.
 - Only return roles you actually rewrote, and match company_name exactly.
 

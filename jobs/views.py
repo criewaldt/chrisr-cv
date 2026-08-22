@@ -235,7 +235,6 @@ def prep_status(request, pk):
         'state': state,
         'version': application.version,
         'error': application.error[:300],
-        'stretch_claims': application.stretch_claims,
         'cost': str(application.cost_usd),
     })
 
