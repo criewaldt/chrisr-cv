@@ -63,10 +63,37 @@
       </div>
     {% endif %}
     {% if application.cover_letter_md %}
-      <h4 style="font-size:.85rem;color:#8a8a8a;margin-bottom:6px">Cover letter</h4>
-      <textarea readonly style="width:100%;height:220px;background:#0f0f0f;border:1px solid #262626;
-        border-radius:8px;color:#d5d5d5;padding:11px;font-size:.83rem;font-family:inherit"
-      >{{ application.cover_letter_md }}</textarea>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;
+                  gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        <h4 style="font-size:.85rem;color:#8a8a8a">Cover letter</h4>
+        <span class="muted" style="font-size:.75rem" id="cl-meta">
+          <span id="cl-words">{{ application.cover_letter_md|wordcount }}</span> words
+          {% if application.cover_letter_is_edited %}· <span class="ok">edited</span>{% endif %}
+        </span>
+      </div>
+      <form method="post" action="{% url 'jobs:save-cover-letter' posting.pk %}" id="cl-form">
+        {% csrf_token %}
+        <textarea name="cover_letter_md" id="cl-text"
+          style="width:100%;height:230px;background:#0f0f0f;border:1px solid #262626;
+                 border-radius:8px;color:#d5d5d5;padding:11px;font-size:.86rem;
+                 line-height:1.55;font-family:inherit;resize:vertical"
+        >{{ application.cover_letter_md }}</textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+          <button type="submit" id="cl-save">Save</button>
+          <a class="btn ghost" href="{% url 'jobs:cover-pdf' posting.pk %}" id="cl-pdf">
+            Download PDF</a>
+          <button type="submit" name="revert" value="1" class="btn ghost" id="cl-revert"
+                  {% if not application.can_revert_cover_letter %}disabled
+                  style="opacity:.45;cursor:default"{% endif %}
+                  onclick="return confirm('Discard your edits and restore the generated letter?')">
+            Revert to generated</button>
+          <span class="muted" id="cl-status" style="font-size:.78rem"></span>
+        </div>
+      </form>
+      <div class="muted" style="font-size:.75rem;margin-top:7px">
+        The PDF renders from this text each time you download it — edit, save, and the
+        next download reflects it. Aim for 90–130 words in one paragraph.
+      </div>
     {% endif %}
   </div>
 {% elif application and application.state == 'pending' %}
@@ -86,6 +113,62 @@
 
 <script>
 (function () {
+  // --- cover letter editing ---------------------------------------------
+  var clForm = document.getElementById('cl-form');
+  if (clForm) {
+    var clText = document.getElementById('cl-text');
+    var clSave = document.getElementById('cl-save');
+    var clStat = document.getElementById('cl-status');
+    var clWords = document.getElementById('cl-words');
+    var saved = clText.value;
+
+    function countWords() {
+      var n = clText.value.trim().split(/\s+/).filter(Boolean).length;
+      clWords.textContent = n;
+      // 90-130 is the spec the generator writes to; flag drift, don't block it.
+      clWords.style.color = (n >= 90 && n <= 130) ? '' : '#d0a94e';
+    }
+    clText.addEventListener('input', function () {
+      countWords();
+      clStat.textContent = clText.value !== saved ? 'unsaved changes' : '';
+      clStat.style.color = clText.value !== saved ? '#d0a94e' : '';
+    });
+    countWords();
+
+    clForm.addEventListener('submit', function (e) {
+      // Revert posts normally so the page reloads with the restored text.
+      if (document.activeElement && document.activeElement.id === 'cl-revert') return;
+      e.preventDefault();
+      clSave.disabled = true; clStat.textContent = 'saving…'; clStat.style.color = '';
+      var body = new FormData(clForm);
+      body.delete('revert');
+      fetch(clForm.action, {
+        method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: body
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        saved = clText.value;
+        clSave.disabled = false;
+        clStat.textContent = 'saved — the PDF will use this';
+        clStat.style.color = '#4ecdc4';
+        if (d.can_revert) {
+          var rv = document.getElementById('cl-revert');
+          rv.disabled = false; rv.style.opacity = ''; rv.style.cursor = '';
+        }
+      }).catch(function () {
+        clSave.disabled = false;
+        clStat.textContent = 'save failed'; clStat.style.color = '#d47f7f';
+      });
+    });
+
+    // Don't let a download quietly ship the old text.
+    document.getElementById('cl-pdf').addEventListener('click', function (e) {
+      if (clText.value !== saved &&
+          !confirm('You have unsaved edits. Download the last saved version anyway?')) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  // --- prep button ------------------------------------------------------
   var form = document.getElementById('prep-form');
   var box  = document.getElementById('prep-box');
   if (!form) return;

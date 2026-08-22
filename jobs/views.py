@@ -281,6 +281,37 @@ def resume_docx(request, pk):
 
 
 @staff_member_required
+@require_POST
+def save_cover_letter(request, pk):
+    """Persist an edited cover letter.
+
+    Nothing is cached or written to disk, so the next PDF download simply renders
+    the new text -- there is no stale document to invalidate.
+    """
+    posting = get_object_or_404(JobPosting, pk=pk)
+    application = posting.current_application
+    if application is None:
+        raise Http404('This job has not been prepped yet.')
+
+    text = (request.POST.get('cover_letter_md') or '').strip()
+    revert = request.POST.get('revert') == '1'
+    if revert and application.cover_letter_original:
+        text = application.cover_letter_original.strip()
+
+    application.cover_letter_md = text
+    application.cover_letter_edited_at = None if revert else timezone.now()
+    application.save(update_fields=['cover_letter_md', 'cover_letter_edited_at'])
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'ok': True, 'words': len(text.split()),
+            'edited': application.cover_letter_is_edited,
+            'can_revert': application.can_revert_cover_letter,
+        })
+    return redirect('jobs:detail', pk=pk)
+
+
+@staff_member_required
 def cover_pdf(request, pk):
     """Cover letter on the same letterhead as the resume."""
     posting = get_object_or_404(JobPosting, pk=pk)

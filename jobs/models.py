@@ -279,6 +279,10 @@ class TailoredApplication(models.Model):
 
     resume_json = models.JSONField(default=_dict, blank=True)
     cover_letter_md = models.TextField(blank=True, default='')
+    # The letter exactly as generated, kept so editing is never a one-way door --
+    # reverting costs nothing rather than another tailoring call.
+    cover_letter_original = models.TextField(blank=True, default='')
+    cover_letter_edited_at = models.DateTimeField(null=True, blank=True)
     cover_letter_needed = models.BooleanField(default=True)
     screener_answers = models.JSONField(default=_dict, blank=True)
     ats_keywords_used = models.JSONField(default=_list, blank=True)
@@ -294,6 +298,15 @@ class TailoredApplication(models.Model):
 
     def __str__(self):
         return f'v{self.version} {self.get_state_display()} - {self.posting}'
+
+    @property
+    def cover_letter_is_edited(self):
+        return bool(self.cover_letter_edited_at)
+
+    @property
+    def can_revert_cover_letter(self):
+        return bool(self.cover_letter_original
+                    and self.cover_letter_original != self.cover_letter_md)
 
     @property
     def is_stale(self):

@@ -18,4 +18,5 @@ urlpatterns = [
     path('job/<int:pk>/resume.pdf', views.resume_pdf, name='resume-pdf'),
     path('job/<int:pk>/resume.docx', views.resume_docx, name='resume-docx'),
     path('job/<int:pk>/cover.pdf', views.cover_pdf, name='cover-pdf'),
+    path('job/<int:pk>/cover/save/', views.save_cover_letter, name='save-cover-letter'),
 ]

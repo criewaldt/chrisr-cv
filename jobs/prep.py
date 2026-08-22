@@ -65,6 +65,7 @@ def _run(application_id):
 
         application.resume_json = apply_patch(master, result)
         application.cover_letter_md = result.cover_letter_md or ''
+        application.cover_letter_original = result.cover_letter_md or ''
         application.cover_letter_needed = bool(result.cover_letter_needed)
         application.screener_answers = {a.question: a.answer for a in result.screener_answers}
         application.ats_keywords_used = result.ats_keywords_used
