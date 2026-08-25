@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
-from resume.views import ResumePDFView, ResumeViewSet, SendEmailView
+from resume.views import ResumePDFView, ResumeViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,13 +27,11 @@ urlpatterns = [
     path('', include('studio.urls')),
     path('cv/', ResumeViewSet.as_view({'get': 'list'}), name='resume_viewset'),
     path('resume.pdf', ResumePDFView, name='resume-pdf'),
-    path('send-email/', SendEmailView, name='send-email'),
 
     # /dev/ was the services page while it was being built -- keep shared links working.
     path('dev/', RedirectView.as_view(pattern_name='studio:landing', permanent=False)),
 
     path('bonnaroo/', include('bonnaroo.urls')),
-    path('reimbursable/', include('reimbursable.urls')),
     path('jobs/', include('jobs.urls')),
     path('social/', include('social_django.urls', namespace='social')),
 ]

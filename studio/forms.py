@@ -13,6 +13,10 @@ from .models import Enquiry
 # Bots fill forms instantly; a human cannot read the page and type this fast.
 MIN_SECONDS_ON_PAGE = 3
 
+# A genuine enquiry is a few paragraphs. The model field is a TextField, so without
+# a cap a single request can write an arbitrarily large row.
+MAX_MESSAGE_CHARS = 4000
+
 
 class EnquiryForm(forms.ModelForm):
     # Named innocuously so a bot is tempted to fill it. Hidden from real users in CSS
@@ -36,6 +40,20 @@ class EnquiryForm(forms.ModelForm):
             }),
         }
         labels = {'message': 'What are you trying to fix?'}
+
+    def clean_message(self):
+        message = (self.cleaned_data.get('message') or '').strip()
+        if len(message) > MAX_MESSAGE_CHARS:
+            raise forms.ValidationError(
+                f'Please keep this under {MAX_MESSAGE_CHARS:,} characters — '
+                'a few paragraphs is plenty.')
+        return message
+
+    def clean_name(self):
+        # Newlines here would land in an email Subject header, which Django rejects
+        # outright -- meaning a legitimate-but-odd name would silently cost the
+        # notification. Collapse whitespace instead of failing.
+        return ' '.join((self.cleaned_data.get('name') or '').split())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -179,44 +179,5 @@
   addEventListener('scroll', function () { nav.classList.toggle('stuck', scrollY > 8); },
                    {passive: true});
 </script>
-
-<script>
-addEventListener('load', function () {
-  var vw = document.documentElement.clientWidth;
-  var issues = [];
-  var de = document.documentElement;
-  if (de.scrollWidth > vw + 1)
-    issues.push('PAGE OVERFLOW scrollWidth=' + de.scrollWidth + ' vw=' + vw);
-  document.querySelectorAll('body *').forEach(function (el) {
-    var r = el.getBoundingClientRect();
-    if (r.width === 0 && r.height === 0) return;
-    var cs = getComputedStyle(el);
-    if (cs.position === 'fixed') return;
-    var right = r.right, left = r.left;
-    if (right > vw + 1.5 && cs.overflowX !== 'auto' && cs.overflowX !== 'hidden'
-        && cs.overflowX !== 'scroll' && !el.closest('.marquee')) {
-      issues.push('OVERFLOW <' + el.tagName.toLowerCase() + '.' +
-        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
-        '> right=' + Math.round(right) + ' (vw ' + vw + ')');
-    }
-    if (left < -1.5 && !el.closest('.marquee') && !el.closest('.hp')) {
-      issues.push('NEGATIVE-LEFT <' + el.tagName.toLowerCase() + '.' +
-        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
-        '> left=' + Math.round(left));
-    }
-  });
-  // Text that has been squeezed to an unreadable column
-  document.querySelectorAll('p, li, h1, h2, h3').forEach(function (el) {
-    var r = el.getBoundingClientRect();
-    if (r.width > 0 && r.width < 90 && el.textContent.trim().length > 12)
-      issues.push('NARROW <' + el.tagName.toLowerCase() + '> w=' + Math.round(r.width) +
-                  ' "' + el.textContent.trim().slice(0,26) + '"');
-  });
-  var d = document.createElement('pre'); d.id = 'probe';
-  d.textContent = 'VW=' + vw + ' H=' + de.scrollHeight + ' ISSUES=' + issues.length +
-                  (issues.length ? '\n' + issues.slice(0,14).join('\n') : ' — clean');
-  document.body.appendChild(d);
-});
-</script>
 </body>
 </html>

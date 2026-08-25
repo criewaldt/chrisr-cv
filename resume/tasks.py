@@ -1,26 +1,7 @@
-from celery import shared_task
-from django.core.mail import EmailMessage
+"""No Celery tasks are defined for this app.
 
-
-
-@shared_task
-def send_celery_email(email, num1, num2, delay_time, trickery):
-        
-    sum = num1 + num2
-    
-    if trickery:
-        trickery_string = "Sorry, the delay time must be <= int(61). This email was sent after the default delay of 60 seconds. "
-    else:
-        trickery_string = f"This email was sent after {delay_time} seconds via Celery. "
-        
-    print(f'Celery sending email to {email}')
-        
-    subject = 'Message from ChrisRiewaldt.com - Your Sum Calculation & My CV via Celery Task'
-    message = f'ChrisRiewaldt.com celery task said: the sum of {num1} and {num2} equals {sum}. {trickery_string}Please see the download link to his CV here: \n\nhttps://chrisriewaldt.s3.amazonaws.com/website/CV/ChrisRResume.pdf \n\nThanks,\n-Chris Riewaldt'
-    email_msg = EmailMessage(
-        subject,
-        message,
-        'criewaldt@gmail.com',
-        [email]
-    )
-    email_msg.send()
+``send_celery_email`` lived here and was reachable from an unauthenticated
+``/send-email/`` endpoint that accepted an arbitrary recipient address. It was a
+demo, it had no callers, and with a broker configured it would have been an open
+mail relay sending from the site's own Gmail account. Both were removed.
+"""

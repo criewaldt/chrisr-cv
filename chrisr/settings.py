@@ -32,6 +32,33 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+    # Heroku terminates TLS at the router and forwards over HTTP, so Django sees an
+    # insecure request. Without this header mapping, SECURE_SSL_REDIRECT below would
+    # redirect forever. These two must always be set together.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+
+    # HSTS is deliberately short to start with. A long max-age is effectively
+    # irreversible -- browsers refuse plain HTTP for the full duration, so a broken
+    # certificate takes the site down until it expires. Verify HTTPS is solid, then
+    # raise this to 31536000 (1 year) and only then consider preload.
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get(
+        'SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False') == 'True'
+    SECURE_HSTS_PRELOAD = False
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+X_FRAME_OPTIONS = 'DENY'
+
+# Cap request bodies. The contact form needs a few KB; the default 2.5MB just gives
+# an abusive client a bigger lever.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 512 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
+
 
 # Application definition
 
@@ -46,7 +73,6 @@ INSTALLED_APPS = [
     'chrisr',
     'resume',
     'bonnaroo',
-    'reimbursable',
     'jobs',
     'studio',
 
@@ -82,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'chrisr.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'chrisr.urls'

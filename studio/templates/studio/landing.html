@@ -200,7 +200,7 @@
     </div>
 
     <div class="ba-wrap reveal">
-      <svg class="ba" viewBox="0 0 720 190" role="img"
+      <svg class="ba ba-wide" viewBox="0 0 720 190" role="img"
            aria-label="Before: requests scattered across inboxes and spreadsheets. After: one automated pipeline.">
         <text class="lbl-w" x="8" y="14">TODAY</text>
         <text class="lbl-a" x="404" y="14">AFTER</text>
@@ -248,6 +248,51 @@
           <text class="lbl" x="266" y="118">paid</text>
           <text class="lbl-a" x="4" y="176">one owner · full audit trail · every step measurable</text>
         </g>
+      </svg>
+
+      <!-- Narrow-screen variant. Not a scaled-down copy: the wide diagram's 9px
+           labels render at ~4px once squeezed to 320px. This stacks the two halves
+           so each gets full width, and runs the pipeline vertically. -->
+      <svg class="ba ba-tall" viewBox="0 0 340 505" role="img"
+           aria-label="Today: requests scattered across inboxes and spreadsheets. After: one automated pipeline from request to invoice.">
+        <text class="lbl-w" x="4" y="16" style="font-size:13px">TODAY</text>
+        <g>
+          <rect class="msg" x="4"   y="40"  width="104" height="34" rx="7"/>
+          <rect class="msg" x="176" y="32"  width="104" height="34" rx="7"/>
+          <rect class="msg" x="26"  y="122" width="104" height="34" rx="7"/>
+          <rect class="msg" x="196" y="132" width="104" height="34" rx="7"/>
+          <text class="lbl" x="22"  y="62"  style="font-size:12px">Email</text>
+          <text class="lbl" x="194" y="54"  style="font-size:12px">Spreadsheet</text>
+          <text class="lbl" x="44"  y="144" style="font-size:12px">Slack</text>
+          <text class="lbl" x="214" y="154" style="font-size:12px">Inbox</text>
+          <path class="tangle" d="M108 60 C150 74 130 116 196 146"/>
+          <path class="tangle" d="M176 50 C140 66 96 96 78 122"/>
+          <path class="tangle" d="M130 140 C176 128 190 92 218 66"/>
+          <path class="tangle" d="M60 74 C74 100 150 120 196 152"/>
+          <path class="tangle" d="M280 52 C240 84 168 100 130 134"/>
+        </g>
+        <text class="lbl-w" x="4" y="196" style="font-size:11.5px">no owner · no audit trail</text>
+        <text class="lbl-w" x="4" y="213" style="font-size:11.5px">nothing measurable</text>
+
+        <line x1="4" y1="243" x2="336" y2="243" stroke="#1e2226" stroke-width="1"/>
+
+        <text class="lbl-a" x="4" y="277" style="font-size:13px">AFTER</text>
+        <g transform="translate(0,20)">
+          <path class="clean" d="M26 300 V438"/>
+          <circle class="node" cx="26" cy="300" r="10"/>
+          <circle class="node" cx="26" cy="346" r="10"/>
+          <circle class="node" cx="26" cy="392" r="10"/>
+          <circle class="node" cx="26" cy="438" r="10"/>
+          <text class="lbl-a" x="52" y="298" style="font-size:13px">Request</text>
+          <text class="lbl"   x="52" y="313" style="font-size:11px">logged</text>
+          <text class="lbl-a" x="52" y="344" style="font-size:13px">Approve</text>
+          <text class="lbl"   x="52" y="359" style="font-size:11px">routed</text>
+          <text class="lbl-a" x="52" y="390" style="font-size:13px">Issue</text>
+          <text class="lbl"   x="52" y="405" style="font-size:11px">tracked</text>
+          <text class="lbl-a" x="52" y="436" style="font-size:13px">Invoice</text>
+          <text class="lbl"   x="52" y="451" style="font-size:11px">paid</text>
+        </g>
+        <text class="lbl-a" x="4" y="492" style="font-size:11.5px">one owner · full audit trail · measurable</text>
       </svg>
     </div>
   </div>
@@ -631,45 +676,6 @@
     stats.forEach(function (el) { so.observe(el); });
   }
 })();
-</script>
-
-<script>
-addEventListener('load', function () {
-  var vw = document.documentElement.clientWidth;
-  var issues = [];
-  var de = document.documentElement;
-  if (de.scrollWidth > vw + 1)
-    issues.push('PAGE OVERFLOW scrollWidth=' + de.scrollWidth + ' vw=' + vw);
-  document.querySelectorAll('body *').forEach(function (el) {
-    var r = el.getBoundingClientRect();
-    if (r.width === 0 && r.height === 0) return;
-    var cs = getComputedStyle(el);
-    if (cs.position === 'fixed') return;
-    var right = r.right, left = r.left;
-    if (right > vw + 1.5 && cs.overflowX !== 'auto' && cs.overflowX !== 'hidden'
-        && cs.overflowX !== 'scroll' && !el.closest('.marquee')) {
-      issues.push('OVERFLOW <' + el.tagName.toLowerCase() + '.' +
-        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
-        '> right=' + Math.round(right) + ' (vw ' + vw + ')');
-    }
-    if (left < -1.5 && !el.closest('.marquee') && !el.closest('.hp')) {
-      issues.push('NEGATIVE-LEFT <' + el.tagName.toLowerCase() + '.' +
-        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
-        '> left=' + Math.round(left));
-    }
-  });
-  // Text that has been squeezed to an unreadable column
-  document.querySelectorAll('p, li, h1, h2, h3').forEach(function (el) {
-    var r = el.getBoundingClientRect();
-    if (r.width > 0 && r.width < 90 && el.textContent.trim().length > 12)
-      issues.push('NARROW <' + el.tagName.toLowerCase() + '> w=' + Math.round(r.width) +
-                  ' "' + el.textContent.trim().slice(0,26) + '"');
-  });
-  var d = document.createElement('pre'); d.id = 'probe';
-  d.textContent = 'VW=' + vw + ' H=' + de.scrollHeight + ' ISSUES=' + issues.length +
-                  (issues.length ? '\n' + issues.slice(0,14).join('\n') : ' — clean');
-  document.body.appendChild(d);
-});
 </script>
 </body>
 </html>

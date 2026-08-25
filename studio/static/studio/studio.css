@@ -331,6 +331,14 @@ footer { padding: 56px 0; color: var(--ink-3); font-size: .87rem; }
              font-family: 'Inter', sans-serif; }
 .ba-wrap { border: 1px solid var(--line); border-radius: var(--r);
            background: var(--card); padding: 30px 28px; margin-top: 42px; }
+/* Two compositions of the same idea. The wide one loses its labels below ~720px,
+   so the stacked one takes over rather than shrinking further. */
+.ba-tall { display: none; }
+@media (max-width: 760px) {
+  .ba-wide { display: none; }
+  .ba-tall { display: block; max-width: 420px; margin-inline: auto; }
+  .ba-wrap { padding: 24px 20px; }
+}
 
 /* ---------- tech marquee ---------- */
 .marquee {
@@ -355,3 +363,28 @@ footer { padding: 56px 0; color: var(--ink-3); font-size: .87rem; }
   .sysdiag .flow { animation: none; }
 }
 @media (max-width: 620px) { .stat-pic { height: 22px; margin-bottom: 10px; } }
+
+/* ---------- very small screens (320-400px) ----------
+   At 320px the wordmark plus two buttons exceed the available ~280px and push the
+   page into horizontal scroll -- the worst mobile failure, because it makes the
+   whole layout feel broken. Everything in the bar gives a little ground. */
+@media (max-width: 400px) {
+  .wrap { padding: 0 16px; }
+  .nav-inner { height: 58px; gap: 6px; }
+  .brand { font-size: .74rem; }
+  .nav-actions { gap: 5px; }
+  .nav-btn { padding: 8px 11px; font-size: .74rem; }
+
+  /* A pill forced onto three lines reads as a squashed lozenge. Below this width
+     they are allowed to wrap, but as a tag shape rather than a capsule. */
+  .pill { border-radius: 12px; font-size: .7rem; padding: 6px 11px; }
+  .pill-sm { border-radius: 10px; }
+
+  .hero-meta { gap: 8px 16px; font-size: .8rem; }
+  .stat-l, .case-metric-l { max-width: none; }
+
+  /* The tag and the year share a row; at this width the year squeezes the tag onto
+     three lines. Stacking gives the tag the full card width. */
+  .case-top { flex-direction: column; align-items: flex-start; gap: 8px;
+              margin-bottom: 22px; }
+}
