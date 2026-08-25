@@ -10,14 +10,13 @@ from django.conf import settings
 
 # Only origins the site genuinely uses.
 #   fonts.googleapis.com / fonts.gstatic.com -- webfonts on both public pages
-#   unpkg.com                                -- Leaflet CSS + JS on the bonnaroo map
-#   img-src https:                           -- Google account avatars, OSM map tiles
+#   img-src data: / blob:                    -- data-URI images in vendored CSS (admin, DRF)
 CSP = "; ".join([
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://unpkg.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https:",
+    "img-src 'self' data: blob:",
     "connect-src 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
@@ -27,11 +26,9 @@ CSP = "; ".join([
 
 # Drop access to hardware and background APIs nothing here uses.
 PERMISSIONS_POLICY = ", ".join([
-    "accelerometer=()", "camera=()", "display-capture=()", "gyroscope=()",
-    "magnetometer=()", "microphone=()", "payment=()", "usb=()",
+    "accelerometer=()", "camera=()", "display-capture=()", "geolocation=()",
+    "gyroscope=()", "magnetometer=()", "microphone=()", "payment=()", "usb=()",
     "interest-cohort=()",
-    # The bonnaroo map legitimately asks for location.
-    "geolocation=(self)",
 ])
 
 

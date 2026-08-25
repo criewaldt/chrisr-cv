@@ -79,7 +79,6 @@ INSTALLED_APPS = [
 
     'chrisr',
     'resume',
-    'bonnaroo',
     'jobs',
     'studio',
 
@@ -87,26 +86,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_celery_results',
-    'social_django',
 ]
 
-AUTHENTICATION_BACKENDS = [
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_CLIENT_ID', '')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['picture']
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = os.environ.get(
-    'GOOGLE_OAUTH2_REDIRECT_URI',
-    'http://localhost:8000/social/complete/google-oauth2/',
-)
-
-LOGIN_URL = '/bonnaroo/'
-LOGIN_REDIRECT_URL = '/bonnaroo/map/'
-LOGOUT_REDIRECT_URL = '/bonnaroo/'
+# The admin is the only thing that logs anyone in now, so its own login page is
+# where a login_required redirect should land.
+LOGIN_URL = '/admin/login/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -133,8 +117,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },

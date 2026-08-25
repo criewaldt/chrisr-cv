@@ -31,7 +31,5 @@ urlpatterns = [
     # /dev/ was the services page while it was being built -- keep shared links working.
     path('dev/', RedirectView.as_view(pattern_name='studio:landing', permanent=False)),
 
-    path('bonnaroo/', include('bonnaroo.urls')),
     path('jobs/', include('jobs.urls')),
-    path('social/', include('social_django.urls', namespace='social')),
 ]

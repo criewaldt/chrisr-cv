@@ -19,8 +19,7 @@ dashboard itself sends no mail.
 ## 2. Migrations
 
 Already applied to the production CockroachDB (additive only: 9 new tables plus 3
-fields on `jobs_searchprofile`). Nothing in `resume`, `bonnaroo`, or `reimbursable`
-was touched.
+fields on `jobs_searchprofile`). Nothing in `resume` or `reimbursable` was touched.
 
 ## 3. No scheduled tasks
 
