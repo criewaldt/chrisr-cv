@@ -123,15 +123,19 @@ def _notify(enquiry):
     ]
     subject = f'New enquiry — {enquiry.name}' + (f' at {enquiry.company}'
                                                  if enquiry.company else '')
+    # The prospect is copied so they hold written confirmation the enquiry landed.
+    cc = [enquiry.email] if enquiry.email else []
     message = EmailMultiAlternatives(
         subject,
         '\n'.join(lines),
         settings.DEFAULT_FROM_EMAIL,   # must be a Postmark-verified sender
         [to],
+        cc=cc,
         reply_to=[enquiry.email],      # hitting reply goes straight to the prospect
     )
     # Postmark groups by tag in its dashboard; harmless on other backends.
     if 'postmark' in settings.EMAIL_BACKEND:
         message.tags = ['contact-form']
     message.send(fail_silently=False)
-    logger.info('studio: enquiry %s emailed to %s', enquiry.pk, to)
+    logger.info('studio: enquiry %s emailed to %s (cc %s)', enquiry.pk, to,
+                ', '.join(cc) or 'none')

@@ -200,7 +200,11 @@ from chrisr.settings import TIME_ZONE
 # around 500 messages a day and will restrict the account past that, and an SMTP
 # timeout fails silently -- which for a contact form means a lost sales lead with
 # no trace. Anymail raises a real exception instead.
-POSTMARK_SERVER_TOKEN = os.environ.get('POSTMARK_SERVER_TOKEN', '')
+# POSTMARK_API_KEY is accepted as an alias: the token is stored under that name
+# in .env, and reading only POSTMARK_SERVER_TOKEN silently fell through to the
+# console backend -- contact-form mail was printed to stdout, never delivered.
+POSTMARK_SERVER_TOKEN = (os.environ.get('POSTMARK_SERVER_TOKEN', '')
+                         or os.environ.get('POSTMARK_API_KEY', ''))
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
