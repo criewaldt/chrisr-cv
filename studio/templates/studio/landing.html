@@ -1,0 +1,675 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Christopher Riewaldt — Custom Software for Business-Critical Systems</title>
+<meta name="description" content="Independent software engineer building the internal systems that stop businesses losing money — billing audits, operations tooling, procurement automation. $1M+ recovered in missed billings.">
+<meta property="og:title" content="Christopher Riewaldt — Software That Pays for Itself">
+<meta property="og:description" content="I build the internal systems that stop your business losing money. $1M+ recovered in missed billings.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chrisriewaldt.com/dev/">
+<meta name="theme-color" content="#08090a">
+<link rel="icon" href="{% static 'favicon.ico' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;550;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'studio/studio.css' %}">
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">Christopher Riewaldt<i>.</i></a>
+    <div class="nav-links">
+      <a href="#cost">The problem</a>
+      <a href="#work">Services</a>
+      <a href="#cases">Results</a>
+      <a href="#process">Process</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/cv/" class="btn btn-primary nav-btn">CV</a>
+      <a href="#contact" class="btn btn-primary nav-btn">
+        {% if calendar_url %}Book 30-min call{% else %}Start a project{% endif %}</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ hero ============ -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="pill reveal">Independent Software Engineer · New York</div>
+    <h1 class="reveal">Measured<span class="stop">.</span> Automated<span class="stop">.</span> Owned<span class="stop">.</span></h1>
+    <p class="lede reveal">
+      Most companies leak money somewhere unglamorous — work delivered but never billed,
+      priorities set by whoever shouted loudest, approvals rotting in an inbox. I build the
+      internal systems that close those gaps, and I put a number on the result.
+    </p>
+    <div class="btn-row reveal">
+      {% if calendar_url %}
+        <a class="btn btn-accent" href="{{ calendar_url }}" target="_blank" rel="noopener">
+          Book a free 30-min call <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="#contact">Describe your problem</a>
+      {% else %}
+        <a class="btn btn-accent" href="#contact">Tell me what's broken <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="#cases">See the results</a>
+      {% endif %}
+    </div>
+    <div class="hero-meta reveal">
+      <span>7+ years in production</span>
+      <span>Python · Django · FastAPI</span>
+      <span>AWS &amp; Google Cloud</span>
+      <span>Working with US clients</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ stats ============ -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stat-grid reveal">
+      <div class="stat">
+        <svg class="stat-pic" viewBox="0 0 64 26" aria-hidden="true">
+          <path class="s" d="M2 22 h10 v-5 h10 v-5 h10 v-6 h10 v-4 h10"/>
+          <circle class="f" cx="60" cy="2" r="2.4"/>
+        </svg>
+        <div class="stat-n" data-count="1" data-prefix="$" data-suffix="M+">$0</div>
+        <div class="stat-l">recovered in missed billings</div></div>
+      <div class="stat">
+        <svg class="stat-pic" viewBox="0 0 64 26" aria-hidden="true">
+          <g class="dimf">
+            <circle cx="4" cy="5" r="1.7"/><circle cx="13" cy="5" r="1.7"/><circle cx="22" cy="5" r="1.7"/>
+            <circle cx="31" cy="5" r="1.7"/><circle cx="40" cy="5" r="1.7"/><circle cx="49" cy="5" r="1.7"/>
+            <circle cx="4" cy="13" r="1.7"/><circle cx="13" cy="13" r="1.7"/><circle cx="22" cy="13" r="1.7"/>
+            <circle cx="31" cy="13" r="1.7"/><circle cx="40" cy="13" r="1.7"/>
+            <circle cx="4" cy="21" r="1.7"/><circle cx="13" cy="21" r="1.7"/><circle cx="22" cy="21" r="1.7"/>
+          </g>
+          <g class="f"><circle cx="58" cy="5" r="2.2"/><circle cx="49" cy="13" r="2.2"/>
+            <circle cx="31" cy="21" r="2.2"/></g>
+        </svg>
+        <div class="stat-n" data-count="2500" data-suffix="+">0</div>
+        <div class="stat-l">projects scored and ranked per year</div></div>
+      <div class="stat">
+        <svg class="stat-pic" viewBox="0 0 64 26" aria-hidden="true">
+          <path class="dim" d="M32 13 L12 5 M32 13 L12 21 M32 13 L52 6 M32 13 L52 20 M32 13 L32 3 M32 13 L32 23"/>
+          <g class="dimf"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="21" r="2"/>
+            <circle cx="52" cy="6" r="2"/><circle cx="52" cy="20" r="2"/>
+            <circle cx="32" cy="3" r="2"/><circle cx="32" cy="23" r="2"/></g>
+          <circle class="f" cx="32" cy="13" r="3.4"/>
+        </svg>
+        <div class="stat-n" data-count="60" data-suffix="">0</div>
+        <div class="stat-l">users on a platform I built and run</div></div>
+      <div class="stat">
+        <svg class="stat-pic" viewBox="0 0 64 26" aria-hidden="true">
+          <path class="s" d="M2 13 h60"/>
+          <g class="f"><circle cx="2" cy="13" r="2"/><circle cx="17" cy="13" r="2"/>
+            <circle cx="32" cy="13" r="2"/><circle cx="47" cy="13" r="2"/>
+            <circle cx="62" cy="13" r="2"/></g>
+        </svg>
+        <div class="stat-n" data-count="100" data-suffix="%">0</div>
+        <div class="stat-l">uptime since January 2024</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ tech marquee ============ -->
+<div class="marquee" aria-label="Technologies used">
+  <div class="marquee-track">
+    <!-- The group is duplicated so translateX(-50%) loops seamlessly. -->
+    <div class="marquee-group">
+        <span class="mq"><b>/</b>Python</span>
+        <span class="mq"><b>/</b>Django</span>
+        <span class="mq"><b>/</b>FastAPI</span>
+        <span class="mq"><b>/</b>Flask</span>
+        <span class="mq"><b>/</b>PostgreSQL</span>
+        <span class="mq"><b>/</b>Celery</span>
+        <span class="mq"><b>/</b>REST APIs</span>
+        <span class="mq"><b>/</b>AWS</span>
+        <span class="mq"><b>/</b>Google Cloud</span>
+        <span class="mq"><b>/</b>Docker</span>
+        <span class="mq"><b>/</b>CI/CD</span>
+        <span class="mq"><b>/</b>Salesforce</span>
+        <span class="mq"><b>/</b>Redis</span>
+        <span class="mq"><b>/</b>Pydantic</span>
+        <span class="mq"><b>/</b>LLM &amp; RAG</span>
+        <span class="mq"><b>/</b>Google Maps API</span>
+        <span class="mq"><b>/</b>S3</span>
+        <span class="mq"><b>/</b>OAuth 2.0</span>
+    </div>
+    <div class="marquee-group" aria-hidden="true">
+        <span class="mq"><b>/</b>Python</span>
+        <span class="mq"><b>/</b>Django</span>
+        <span class="mq"><b>/</b>FastAPI</span>
+        <span class="mq"><b>/</b>Flask</span>
+        <span class="mq"><b>/</b>PostgreSQL</span>
+        <span class="mq"><b>/</b>Celery</span>
+        <span class="mq"><b>/</b>REST APIs</span>
+        <span class="mq"><b>/</b>AWS</span>
+        <span class="mq"><b>/</b>Google Cloud</span>
+        <span class="mq"><b>/</b>Docker</span>
+        <span class="mq"><b>/</b>CI/CD</span>
+        <span class="mq"><b>/</b>Salesforce</span>
+        <span class="mq"><b>/</b>Redis</span>
+        <span class="mq"><b>/</b>Pydantic</span>
+        <span class="mq"><b>/</b>LLM &amp; RAG</span>
+        <span class="mq"><b>/</b>Google Maps API</span>
+        <span class="mq"><b>/</b>S3</span>
+        <span class="mq"><b>/</b>OAuth 2.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ the hidden cost ============ -->
+<section id="cost">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="num"><b>01</b> &nbsp;— &nbsp;The problem</span>
+      <h2>The hidden cost of manual work<span class="stop">.</span></h2>
+      <p class="lede">
+        None of these show up as a line item. They show up as margin you never see,
+        and a team that's busy without being productive.
+      </p>
+    </div>
+
+    <div class="pains">
+      <div class="pain reveal"><div class="i">01</div>
+        <div><h3>Work delivered, never invoiced</h3>
+          <p>Nobody can say how much, because finding out means a person comparing two
+             systems by hand.</p></div>
+        <div class="cost">→ pure lost revenue</div></div>
+      <div class="pain reveal"><div class="i">02</div>
+        <div><h3>Priorities set by volume, not value</h3>
+          <p>The loudest request wins. The most valuable one waits behind it.</p></div>
+        <div class="cost">→ misallocated capacity</div></div>
+      <div class="pain reveal"><div class="i">03</div>
+        <div><h3>Approvals living in email</h3>
+          <p>Requests stall with no owner and no audit trail. Invoicing waits on somebody
+             remembering.</p></div>
+        <div class="cost">→ slow cash collection</div></div>
+      <div class="pain reveal"><div class="i">04</div>
+        <div><h3>The spreadsheet that outgrew itself</h3>
+          <p>Business-critical, understood by one person, and one bad paste away from a
+             very expensive afternoon.</p></div>
+        <div class="cost">→ single point of failure</div></div>
+      <div class="pain reveal"><div class="i">05</div>
+        <div><h3>Systems that don't talk</h3>
+          <p>The same data keyed into three places, staying wrong in at least one of them.</p></div>
+        <div class="cost">→ compounding errors</div></div>
+    </div>
+
+    <div class="ba-wrap reveal">
+      <svg class="ba" viewBox="0 0 720 190" role="img"
+           aria-label="Before: requests scattered across inboxes and spreadsheets. After: one automated pipeline.">
+        <text class="lbl-w" x="8" y="14">TODAY</text>
+        <text class="lbl-a" x="404" y="14">AFTER</text>
+        <line x1="370" y1="8" x2="370" y2="182" stroke="#1e2226" stroke-width="1"/>
+
+        <!-- scattered: everything routes through people and inboxes -->
+        <g>
+          <rect class="msg" x="14"  y="34"  width="70" height="26" rx="5"/>
+          <rect class="msg" x="120" y="26"  width="70" height="26" rx="5"/>
+          <rect class="msg" x="238" y="44"  width="70" height="26" rx="5"/>
+          <rect class="msg" x="30"  y="104" width="70" height="26" rx="5"/>
+          <rect class="msg" x="150" y="124" width="70" height="26" rx="5"/>
+          <rect class="msg" x="252" y="112" width="70" height="26" rx="5"/>
+          <text class="lbl" x="24"  y="51">Email</text>
+          <text class="lbl" x="128" y="43">Sheet</text>
+          <text class="lbl" x="246" y="61">Inbox</text>
+          <text class="lbl" x="40"  y="121">Slack</text>
+          <text class="lbl" x="158" y="141">Sheet</text>
+          <text class="lbl" x="260" y="129">Email</text>
+          <path class="tangle" d="M84 47 C110 60 96 96 150 118"/>
+          <path class="tangle" d="M190 39 C224 52 150 74 118 104"/>
+          <path class="tangle" d="M238 57 C200 70 226 100 252 122"/>
+          <path class="tangle" d="M100 117 C160 92 176 62 238 52"/>
+          <path class="tangle" d="M220 134 C182 108 132 116 84 56"/>
+          <path class="tangle" d="M308 52 C268 82 200 60 190 40"/>
+          <text class="lbl-w" x="14" y="176">no owner · no audit trail · nothing measurable</text>
+        </g>
+
+        <!-- pipeline: one path, one owner, one record -->
+        <g transform="translate(396,0)">
+          <path class="clean" d="M22 92 H286"/>
+          <g>
+            <circle class="node" cx="22"  cy="92" r="9"/>
+            <circle class="node" cx="110" cy="92" r="9"/>
+            <circle class="node" cx="198" cy="92" r="9"/>
+            <circle class="node" cx="286" cy="92" r="9"/>
+          </g>
+          <text class="lbl-a" x="4"   y="72">Request</text>
+          <text class="lbl-a" x="88"  y="72">Approve</text>
+          <text class="lbl-a" x="182" y="72">Issue</text>
+          <text class="lbl-a" x="266" y="72">Invoice</text>
+          <text class="lbl" x="6"   y="118">logged</text>
+          <text class="lbl" x="92"  y="118">routed</text>
+          <text class="lbl" x="184" y="118">tracked</text>
+          <text class="lbl" x="266" y="118">paid</text>
+          <text class="lbl-a" x="4" y="176">one owner · full audit trail · every step measurable</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ services ============ -->
+<section id="work" style="background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="num"><b>02</b> &nbsp;— &nbsp;Services</span>
+      <h2>Software with a number attached<span class="stop">.</span></h2>
+      <p class="lede">
+        Not brochure sites. The systems running the parts of your business where mistakes
+        cost real money — and where a spreadsheet stopped being enough two years ago.
+      </p>
+    </div>
+
+    <div class="grid grid-4">
+      <div class="card reveal"><span class="k">01</span>
+        <span class="pill pill-sm">Revenue recovery</span>
+        <h3 style="margin-top:16px">Find the money already earned</h3>
+        <p>Audit software that reconciles what you delivered against what you actually
+           billed, and surfaces the gap while it's still collectable.</p></div>
+      <div class="card reveal"><span class="k">02</span>
+        <span class="pill pill-sm">Operations</span>
+        <h3 style="margin-top:16px">Rank work by what it's worth</h3>
+        <p>Scoring engines that prioritise consistently, plus the executive report someone
+           is currently assembling by hand every month.</p></div>
+      <div class="card reveal"><span class="k">03</span>
+        <span class="pill pill-sm">Automation</span>
+        <h3 style="margin-top:16px">Close the request-to-payment loop</h3>
+        <p>Purchase orders, approvals, retainers and invoicing — automated end to end
+           instead of chased over email.</p></div>
+      <div class="card reveal"><span class="k">04</span>
+        <span class="pill pill-sm">Integration &amp; AI</span>
+        <h3 style="margin-top:16px">Make your systems talk</h3>
+        <p>Salesforce, Google Maps &amp; Places, public data APIs — plus LLM features where
+           they genuinely save time rather than just demo well.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ case studies ============ -->
+<section id="cases">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="num"><b>03</b> &nbsp;— &nbsp;Results</span>
+      <h2>Built<span class="stop">.</span> Shipped<span class="stop">.</span> Still running<span class="stop">.</span></h2>
+      <p class="lede">Three systems I designed, built, and operate in production today.</p>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card case reveal">
+        <div class="case-top"><span class="pill pill-sm">Revenue recovery</span>
+          <span class="case-year">2021 — now</span></div>
+                <svg class="sysdiag" viewBox="0 0 300 96" role="img"
+             aria-label="Delivered work and issued invoices are compared continuously; differences are flagged with a dollar value.">
+          <rect class="box" x="2"  y="10" width="78" height="26" rx="5"/>
+          <text class="tx"  x="14" y="27">Work delivered</text>
+          <rect class="box" x="2"  y="58" width="78" height="26" rx="5"/>
+          <text class="tx"  x="16" y="75">Invoices sent</text>
+          <path class="ln" d="M80 23 H120 Q130 23 130 33 V42"/>
+          <path class="ln" d="M80 71 H120 Q130 71 130 61 V52"/>
+          <rect class="box-a" x="106" y="34" width="50" height="26" rx="13"/>
+          <text class="tx-a"  x="118" y="51">compare</text>
+          <path class="ln-a" d="M156 47 H196"/>
+          <polygon class="arrow-a" points="196,43 204,47 196,51"/>
+          <rect class="box-a" x="206" y="32" width="92" height="30" rx="5"/>
+          <text class="tx-a"  x="215" y="51">unbilled, with $</text>
+          <path class="ln-a flow" d="M252 62 V88 H40 V36"/>
+          <polygon class="arrow-a" points="36,40 40,32 44,40"/>
+        </svg>
+        <div class="case-metric">$1M+</div>
+        <div class="case-metric-l">recovered in missed billings</div>
+        <div class="case-row"><div class="case-k">PROBLEM</div>
+          <div class="case-v">Work was delivered and never invoiced. Nobody could quantify it,
+            because reconciling meant a person comparing systems by hand.</div></div>
+        <div class="case-row"><div class="case-k">BUILT</div>
+          <div class="case-v">Billing-audit software that continuously reconciles delivered
+            work against issued invoices and flags every discrepancy with its dollar value.</div></div>
+        <div class="case-row"><div class="case-k">OUTCOME</div>
+          <div class="case-v">Seven figures recovered. Hundreds of hours of manual
+            reconciliation eliminated permanently.</div></div>
+      </div>
+
+      <div class="card case reveal">
+        <div class="case-top"><span class="pill pill-sm">Operations</span>
+          <span class="case-year">2022 — now</span></div>
+                <svg class="sysdiag" viewBox="0 0 300 96" role="img"
+             aria-label="Every project is scored on defined criteria, then ranked into an ordered list for leadership.">
+          <g class="dimf">
+            <rect class="box" x="2" y="8"  width="52" height="13" rx="3"/>
+            <rect class="box" x="2" y="26" width="52" height="13" rx="3"/>
+            <rect class="box" x="2" y="44" width="52" height="13" rx="3"/>
+            <rect class="box" x="2" y="62" width="52" height="13" rx="3"/>
+            <rect class="box" x="2" y="80" width="52" height="13" rx="3"/>
+          </g>
+          <text class="tx" x="2" y="-2">2,500+ / yr</text>
+          <path class="ln" d="M54 15 H92 M54 33 H92 M54 51 H92 M54 69 H92 M54 87 H92"/>
+          <rect class="box-a" x="94" y="30" width="56" height="36" rx="5"/>
+          <text class="tx-a"  x="102" y="46">scoring</text>
+          <text class="tx-a"  x="102" y="58">engine</text>
+          <path class="ln-a" d="M150 48 H186"/>
+          <polygon class="arrow-a" points="186,44 194,48 186,52"/>
+          <rect x="198" y="10" width="96" height="11" rx="3" class="box-a"/>
+          <rect x="198" y="27" width="78" height="11" rx="3" class="box"/>
+          <rect x="198" y="44" width="62" height="11" rx="3" class="box"/>
+          <rect x="198" y="61" width="46" height="11" rx="3" class="box"/>
+          <rect x="198" y="78" width="32" height="11" rx="3" class="box"/>
+          <text class="tx-a" x="198" y="6">ranked for the exec team</text>
+        </svg>
+        <div class="case-metric">2,500+</div>
+        <div class="case-metric-l">projects scored every year</div>
+        <div class="case-row"><div class="case-k">PROBLEM</div>
+          <div class="case-v">2,500 projects a year, each with 20–50 services, prioritised
+            by instinct. No consistent way to decide what mattered most.</div></div>
+        <div class="case-row"><div class="case-k">BUILT</div>
+          <div class="case-v">A scoring and prioritisation engine ranking every project on
+            defined criteria, with custom reporting for the executive team.</div></div>
+        <div class="case-row"><div class="case-k">OUTCOME</div>
+          <div class="case-v">Leadership plans from one ranked view instead of competing
+            spreadsheets and hallway opinions.</div></div>
+      </div>
+
+      <div class="card case reveal">
+        <div class="case-top"><span class="pill pill-sm">Automation</span>
+          <span class="case-year">2023 — now</span></div>
+                <svg class="sysdiag" viewBox="0 0 300 96" role="img"
+             aria-label="A request moves through approval and purchase order to invoice, with every step recorded.">
+          <rect class="box-a" x="2"   y="30" width="56" height="28" rx="5"/>
+          <text class="tx-a"  x="14"  y="48">request</text>
+          <path class="ln-a" d="M58 44 H74"/><polygon class="arrow-a" points="74,40 82,44 74,48"/>
+          <rect class="box"  x="84"  y="30" width="56" height="28" rx="5"/>
+          <text class="tx"   x="96"  y="48">approve</text>
+          <path class="ln-a" d="M140 44 H156"/><polygon class="arrow-a" points="156,40 164,44 156,48"/>
+          <rect class="box"  x="166" y="30" width="46" height="28" rx="5"/>
+          <text class="tx"   x="182" y="48">PO</text>
+          <path class="ln-a" d="M212 44 H228"/><polygon class="arrow-a" points="228,40 236,44 228,48"/>
+          <rect class="box-a" x="238" y="30" width="58" height="28" rx="5"/>
+          <text class="tx-a"  x="248" y="48">invoice</text>
+          <path class="ln flow" d="M30 58 V80 H268 V58"/>
+          <text class="tx" x="112" y="92">every step logged and timestamped</text>
+        </svg>
+        <div class="case-metric">100%</div>
+        <div class="case-metric-l">uptime since January 2024</div>
+        <div class="case-row"><div class="case-k">PROBLEM</div>
+          <div class="case-v">Procurement lived in email. Requests stalled, approvals went
+            missing, invoicing waited on somebody remembering.</div></div>
+        <div class="case-row"><div class="case-k">BUILT</div>
+          <div class="case-v">Purchase-order and retainer workflows carrying a request from
+            submission through approval to invoice, for 60 daily users.</div></div>
+        <div class="case-row"><div class="case-k">OUTCOME</div>
+          <div class="case-v">Procurement runs itself, and has not gone down since the
+            January it launched.</div></div>
+      </div>
+    </div>
+    <p class="lede dim reveal" style="margin-top:30px;font-size:.88rem">
+      Client names withheld by default. Happy to walk through any of these in detail on a call.
+    </p>
+  </div>
+</section>
+
+<!-- ============ process ============ -->
+<section id="process" style="background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="num"><b>04</b> &nbsp;— &nbsp;Process</span>
+      <h2>No surprises<span class="stop">.</span> No open invoices<span class="stop">.</span></h2>
+      <p class="lede">
+        You're hiring the engineer who does the work — not an account manager who
+        forwards it on.
+      </p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><span class="n">STEP 01</span><h3>Scoping call</h3>
+        <p>Free, 30 minutes. You describe what's broken; I tell you honestly whether
+           software is the right fix and what it would take.</p></div>
+      <div class="step reveal"><span class="n">STEP 02</span><h3>Fixed proposal</h3>
+        <p>Written scope, with a price and a date attached. You approve it before any work
+           begins, and it doesn't drift underneath you.</p></div>
+      <div class="step reveal"><span class="n">STEP 03</span><h3>Weekly builds</h3>
+        <p>Working software every week, in an environment you can click through. No
+           three-month silence ending in a reveal.</p></div>
+      <div class="step reveal"><span class="n">STEP 04</span><h3>Handover</h3>
+        <p>Deployed to your infrastructure, in your accounts, documented. You own it
+           outright — including if you'd rather I never touched it again.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ about ============ -->
+<section id="about">
+  <div class="wrap about">
+    <div class="reveal">
+      <span class="num"><b>05</b> &nbsp;— &nbsp;Who you'd work with</span>
+      <h2>Christopher Riewaldt<span class="stop">.</span></h2>
+      <p class="lede">
+        Full-stack engineer in New York, 7+ years building production systems — and,
+        unusually for contract work, I still operate most of what I've built. The billing
+        audit, the scoring engine, the procurement workflows: all live, all mine to keep
+        running.
+      </p>
+      <p class="lede" style="margin-top:18px">
+        That changes how I build. When you're the one carrying the pager you stop shipping
+        clever things that need babysitting, and start shipping boring things that hold.
+        It's why the uptime number exists.
+      </p>
+      <div class="chips">
+        <span class="chip">Python</span><span class="chip">Django</span>
+        <span class="chip">FastAPI</span><span class="chip">Flask</span>
+        <span class="chip">PostgreSQL</span><span class="chip">Celery</span>
+        <span class="chip">REST APIs</span><span class="chip">AWS</span>
+        <span class="chip">Google Cloud</span><span class="chip">Docker</span>
+        <span class="chip">CI/CD</span><span class="chip">Salesforce</span>
+        <span class="chip">LLM &amp; RAG</span><span class="chip">JavaScript</span>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-ghost" href="/cv/">See my full CV <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="https://github.com/criewaldt" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ faq ============ -->
+<section id="faq" style="background:var(--bg-2);border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="head reveal">
+      <span class="num"><b>06</b> &nbsp;— &nbsp;FAQ</span>
+      <h2>The questions you're already asking<span class="stop">.</span></h2>
+    </div>
+    <div class="faq reveal">
+      <details><summary>What does a project typically cost?</summary>
+        <div class="a">It depends entirely on scope, so I won't publish a number that would
+          be wrong for your situation. What I will do is give you a fixed price before any
+          work starts — after the scoping call, in writing, with a date attached. If the
+          number doesn't work, you've lost thirty minutes and nothing else.</div></details>
+      <details><summary>How long does something like this take?</summary>
+        <div class="a">Most systems on this page reached a useful first version in four to
+          eight weeks, then kept growing. You'll see working software weekly from the start,
+          so you're never waiting on a big reveal to find out whether it's going well.</div></details>
+      <details><summary>I'm not sure software is even the answer.</summary>
+        <div class="a">Then the scoping call is genuinely worth taking, because sometimes it
+          isn't. A process change or an off-the-shelf tool is occasionally the better answer,
+          and I'd rather tell you that than sell you a build you didn't need.</div></details>
+      <details><summary>Who owns the code?</summary>
+        <div class="a">You do, outright. It's deployed to your infrastructure, under your
+          accounts, and documented so another engineer can pick it up. No hostage-taking,
+          no proprietary platform you can only leave by starting over.</div></details>
+      <details><summary>What happens after it launches?</summary>
+        <div class="a">Your choice. Plenty of clients take the handover and run it themselves.
+          Others keep me on a retainer for changes and support — that's how the systems on
+          this page have stayed up. Neither is assumed, and you're not locked into either.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ contact ============ -->
+<section class="cta-band" id="contact">
+  <div class="wrap contact-grid">
+    <div class="reveal">
+      <span class="num"><b>07</b> &nbsp;— &nbsp;Start here</span>
+      <h2>What's it costing you<span class="stop">?</span></h2>
+      <p class="lede">
+        Tell me roughly what's broken. I'll reply within a business day with whether I can
+        help — and if I can't, who or what would be better.
+      </p>
+      <ul class="ticks">
+        <li><span class="tick">✓</span><span><b>Free scoping call.</b> No obligation, no pitch deck.</span></li>
+        <li><span class="tick">✓</span><span><b>Straight answers.</b> If you don't need custom software, I'll say so.</span></li>
+        <li><span class="tick">✓</span><span><b>Fixed prices.</b> You approve a number before anything is built.</span></li>
+        <li><span class="tick">✓</span><span><b>You own the code.</b> Your accounts, documented, yours.</span></li>
+      </ul>
+      {% if calendar_url %}
+        <div class="btn-row">
+          <a class="btn btn-ghost" href="{{ calendar_url }}" target="_blank" rel="noopener">
+            Skip ahead — book a call <span class="arrow">→</span></a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="reveal">
+      {% if sent %}
+        <div class="sent">
+          <h3>Got it — thank you.</h3>
+          <p class="lede">Your message is with me and I'll reply within a business day,
+            usually sooner.{% if calendar_url %} If you'd rather skip ahead, you can
+            <a href="{{ calendar_url }}" target="_blank" rel="noopener"
+               style="color:var(--accent)">book a call directly</a>.{% endif %}</p>
+        </div>
+      {% else %}
+        <form method="post" action="{% url 'studio:landing' %}#contact" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="source" value="contact-form">
+          <input type="hidden" name="loaded_at" value="{{ loaded_at }}">
+          <div class="hp" aria-hidden="true">
+            <label for="id_website">Website</label>
+            <input type="text" name="website" id="id_website" tabindex="-1" autocomplete="off">
+          </div>
+          {% if form.non_field_errors %}<div class="errors">{{ form.non_field_errors }}</div>{% endif %}
+          <div class="form-row">
+            <div class="field"><label for="{{ form.name.id_for_label }}">Name</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="errors">{{ form.name.errors.0 }}</div>{% endif %}</div>
+            <div class="field"><label for="{{ form.email.id_for_label }}">Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="errors">{{ form.email.errors.0 }}</div>{% endif %}</div>
+          </div>
+          <div class="field">
+            <label for="{{ form.company.id_for_label }}">Company <span class="dim">(optional)</span></label>
+            {{ form.company }}</div>
+          <div class="form-row">
+            <div class="field"><label for="{{ form.budget.id_for_label }}">Budget</label>{{ form.budget }}</div>
+            <div class="field"><label for="{{ form.timeline.id_for_label }}">Timeline</label>{{ form.timeline }}</div>
+          </div>
+          <div class="field">
+            <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+            {{ form.message }}
+            {% if form.message.errors %}<div class="errors">{{ form.message.errors.0 }}</div>{% endif %}</div>
+          <button type="submit" class="btn btn-accent" style="width:100%">
+            Send it over <span class="arrow">→</span></button>
+          <p class="lede dim" style="text-align:center;margin-top:14px;font-size:.83rem">
+            Goes straight to my inbox. No list, no newsletter.</p>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>© <span id="yr">2026</span> Christopher Riewaldt · New York, NY</div>
+    <div>
+      <a href="/cv/">CV</a> &nbsp;·&nbsp;
+      <a href="https://github.com/criewaldt" target="_blank" rel="noopener">GitHub</a> &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  var nav = document.getElementById('nav');
+  addEventListener('scroll', function () { nav.classList.toggle('stuck', scrollY > 8); },
+                   {passive: true});
+
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reveals = document.querySelectorAll('.reveal');
+  if (reduced || !('IntersectionObserver' in window)) {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var ro = new IntersectionObserver(function (es) {
+      es.forEach(function (e, i) {
+        if (!e.isIntersecting) return;
+        setTimeout(function () { e.target.classList.add('in'); }, i * 60);
+        ro.unobserve(e.target);
+      });
+    }, {threshold: .1, rootMargin: '0px 0px -50px'});
+    reveals.forEach(function (el) { ro.observe(el); });
+  }
+
+  function runCounter(el) {
+    var target = parseFloat(el.dataset.count),
+        prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '',
+        dec = target % 1 !== 0 ? 1 : 0;
+    if (reduced) { el.textContent = prefix + target.toFixed(dec) + suffix; return; }
+    var t0 = performance.now(), dur = 1400;
+    (function frame(now) {
+      var p = Math.min((now - t0) / dur, 1), v = target * (1 - Math.pow(1 - p, 3));
+      el.textContent = prefix + (dec ? v.toFixed(1) : Math.round(v).toLocaleString()) + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+    })(t0);
+  }
+  var stats = document.querySelectorAll('.stat-n');
+  if (!('IntersectionObserver' in window)) { stats.forEach(runCounter); }
+  else {
+    var so = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { runCounter(e.target); so.unobserve(e.target); } });
+    }, {threshold: .5});
+    stats.forEach(function (el) { so.observe(el); });
+  }
+})();
+</script>
+
+<script>
+addEventListener('load', function () {
+  var vw = document.documentElement.clientWidth;
+  var issues = [];
+  var de = document.documentElement;
+  if (de.scrollWidth > vw + 1)
+    issues.push('PAGE OVERFLOW scrollWidth=' + de.scrollWidth + ' vw=' + vw);
+  document.querySelectorAll('body *').forEach(function (el) {
+    var r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) return;
+    var cs = getComputedStyle(el);
+    if (cs.position === 'fixed') return;
+    var right = r.right, left = r.left;
+    if (right > vw + 1.5 && cs.overflowX !== 'auto' && cs.overflowX !== 'hidden'
+        && cs.overflowX !== 'scroll' && !el.closest('.marquee')) {
+      issues.push('OVERFLOW <' + el.tagName.toLowerCase() + '.' +
+        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
+        '> right=' + Math.round(right) + ' (vw ' + vw + ')');
+    }
+    if (left < -1.5 && !el.closest('.marquee') && !el.closest('.hp')) {
+      issues.push('NEGATIVE-LEFT <' + el.tagName.toLowerCase() + '.' +
+        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
+        '> left=' + Math.round(left));
+    }
+  });
+  // Text that has been squeezed to an unreadable column
+  document.querySelectorAll('p, li, h1, h2, h3').forEach(function (el) {
+    var r = el.getBoundingClientRect();
+    if (r.width > 0 && r.width < 90 && el.textContent.trim().length > 12)
+      issues.push('NARROW <' + el.tagName.toLowerCase() + '> w=' + Math.round(r.width) +
+                  ' "' + el.textContent.trim().slice(0,26) + '"');
+  });
+  var d = document.createElement('pre'); d.id = 'probe';
+  d.textContent = 'VW=' + vw + ' H=' + de.scrollHeight + ' ISSUES=' + issues.length +
+                  (issues.length ? '\n' + issues.slice(0,14).join('\n') : ' — clean');
+  document.body.appendChild(d);
+});
+</script>
+</body>
+</html>

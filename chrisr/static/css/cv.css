@@ -1,0 +1,111 @@
+/* CV page. Shares studio.css for the palette, type scale and pills so the two
+   pages read as one site.
+
+   This styles the WEB view only. The downloadable PDF is rendered separately by
+   resume/pdf.py and stays light and print-friendly on purpose -- a resume gets
+   printed, forwarded and fed to ATS parsers, none of which want a dark document. */
+
+.cv-header { padding: 76px 0 54px; }
+.cv-top { display: grid; grid-template-columns: 1fr auto; gap: 34px; align-items: end; }
+.cv-name { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700;
+           letter-spacing: -.035em; line-height: 1.03; }
+.cv-title { color: var(--accent); font-size: clamp(.98rem, 1.5vw, 1.14rem);
+            margin-top: 10px; font-weight: 500; }
+.cv-contact { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px;
+              color: var(--ink-2); font-size: .9rem; }
+.cv-contact a { color: var(--ink-2); transition: color .15s; }
+.cv-contact a:hover { color: var(--accent); }
+.cv-actions { display: flex; flex-direction: column; gap: 10px; }
+
+.cv-body { padding-bottom: 120px; }
+.cv-grid { display: grid; grid-template-columns: 1fr 320px; gap: 64px; align-items: start; }
+/* The sidebar is laid out as a flex column with an explicit gap rather than relying
+   on child margins inside a grid item. `align-self: start` stops the aside being
+   stretched to the row height, and `align-content: flex-start` on the chip lists
+   stops wrapped flex lines stretching to fill -- between them those were adding
+   ~300px of dead space above each heading. */
+.cv-grid > aside {
+  display: flex; flex-direction: column; gap: 34px;
+  align-self: start;
+}
+
+/* studio.css styles bare `section` with 132px vertical padding for the services
+   page's rhythm. This page loads that stylesheet for the palette, so its sections
+   inherited 264px of padding each -- which is what was pushing the sidebar
+   headings hundreds of pixels apart. Spacing here is controlled by margins only. */
+.cv-sec { padding: 0; margin-bottom: 52px; }
+.cv-sec > h2 {
+  font-family: 'Sora', sans-serif; font-size: .82rem; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+  padding-bottom: 14px; margin-bottom: 26px; border-bottom: 1px solid var(--line);
+}
+.cv-sec > h2 b { color: var(--accent); font-weight: 600; }
+
+.cv-summary { color: var(--ink-2); font-size: 1.02rem; line-height: 1.7; }
+.cv-summary p { margin-bottom: 12px; }
+.cv-summary strong, .cv-summary b { color: var(--ink); font-weight: 600; }
+
+/* --- experience timeline --- */
+.job { position: relative; padding: 0 0 38px 26px; border-left: 1px solid var(--line); }
+.job:last-child { padding-bottom: 0; border-left-color: transparent; }
+.job::before {
+  content: ''; position: absolute; left: -5px; top: 7px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--bg); border: 2px solid var(--line-2);
+  transition: border-color .2s;
+}
+.job:hover::before { border-color: var(--accent); }
+.job-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.job-title { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 600;
+             letter-spacing: -.02em; }
+.job-co { color: var(--accent); font-size: .95rem; font-weight: 500; margin-left: auto; }
+.job-time { color: var(--ink-3); font-size: .82rem; margin: 5px 0 13px; }
+.job-desc { color: var(--ink-2); font-size: .94rem; line-height: 1.68; }
+.job-desc ul { list-style: none; }
+.job-desc li { position: relative; padding-left: 18px; margin-bottom: 9px; }
+.job-desc li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+.job-desc strong, .job-desc b { color: var(--ink); font-weight: 600; }
+
+/* --- sidebar --- */
+/* The sidebar holds short lists in a narrow column, so it needs a tighter rhythm
+   than the main experience column -- 56px between three small blocks reads as
+   things having fallen apart rather than as breathing room. */
+aside .cv-sec { margin-bottom: 0; }
+aside .cv-sec > h2 { padding-bottom: 11px; margin-bottom: 18px; }
+
+.skill-cat { margin-bottom: 18px; }
+.skill-cat:last-child { margin-bottom: 0; }
+.skill-cat h4 { font-size: .84rem; font-weight: 600; color: var(--ink);
+                margin-bottom: 11px; letter-spacing: -.01em; }
+.skill-list { display: flex; flex-wrap: wrap; align-content: flex-start;
+               gap: 6px; list-style: none; }
+.skill-list li { font-size: .77rem; color: var(--ink-2); background: var(--card);
+                 border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+
+.entry { padding-bottom: 13px; margin-bottom: 13px; border-bottom: 1px solid var(--line); }
+.entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.entry-name { font-weight: 600; font-size: .95rem; }
+.entry-meta { color: var(--ink-3); font-size: .84rem; margin-top: 3px; }
+.entry-desc { color: var(--ink-2); font-size: .86rem; margin-top: 5px; }
+
+@media (max-width: 980px) {
+  .cv-grid { grid-template-columns: 1fr; gap: 44px; }
+  .cv-top { grid-template-columns: 1fr; gap: 22px; }
+  .cv-actions { flex-direction: row; flex-wrap: wrap; }
+  .cv-header { padding: 44px 0 34px; }
+  .cv-body { padding-bottom: 72px; }
+}
+@media (max-width: 620px) {
+  .job-co { margin-left: 0; }
+  .cv-actions .btn { width: 100%; }
+}
+
+/* Printing the web page is not the intended path -- the PDF button is -- but if
+   someone does, give them ink-on-paper rather than a black rectangle. */
+@media print {
+  body { background: #fff; color: #111; }
+  .nav, .cv-actions, footer { display: none; }
+  .cv-name, .job-title, .entry-name { color: #111; }
+  .cv-summary, .job-desc, .entry-meta { color: #333; }
+  .job { border-left-color: #ccc; }
+  .skill-list li { border-color: #ccc; color: #333; }
+}

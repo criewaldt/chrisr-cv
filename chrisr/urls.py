@@ -16,15 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 from resume.views import ResumePDFView, ResumeViewSet, SendEmailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', ResumeViewSet.as_view({'get':'list'}), name='resume_viewset'),
+    # The services page is the front door; the CV lives at /cv/.
+    path('', include('studio.urls')),
+    path('cv/', ResumeViewSet.as_view({'get': 'list'}), name='resume_viewset'),
     path('resume.pdf', ResumePDFView, name='resume-pdf'),
     path('send-email/', SendEmailView, name='send-email'),
+
+    # /dev/ was the services page while it was being built -- keep shared links working.
+    path('dev/', RedirectView.as_view(pattern_name='studio:landing', permanent=False)),
 
     path('bonnaroo/', include('bonnaroo.urls')),
     path('reimbursable/', include('reimbursable.urls')),

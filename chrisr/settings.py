@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'bonnaroo',
     'reimbursable',
     'jobs',
+    'studio',
 
     'rest_framework',
     'django_celery_results',
@@ -207,3 +208,9 @@ JOBS_TAILOR_EFFORT = os.environ.get('JOBS_TAILOR_EFFORT', 'medium')
 # Gmail sender so a missing config var still reaches an inbox rather than nowhere.
 JOBS_DIGEST_TO = os.environ.get('JOBS_DIGEST_TO', '') or EMAIL_HOST_USER
 JOBS_SITE_URL = os.environ.get('JOBS_SITE_URL', 'https://chrisriewaldt.com').rstrip('/')
+
+# --- studio (services page) ----------------------------------------------
+# The "Book a call" button renders only when a scheduling URL is configured, so
+# the page never ships a button pointing at nothing.
+STUDIO_CALENDAR_URL = os.environ.get('STUDIO_CALENDAR_URL', '')
+STUDIO_NOTIFY_TO = os.environ.get('STUDIO_NOTIFY_TO', '') or EMAIL_HOST_USER

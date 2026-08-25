@@ -1,382 +1,222 @@
-
-{% load static %}
-<!DOCTYPE html>
-<html lang="en"> 
+{% load static %}{% load sort_tags %}<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Chris Riewaldt | Software Developer</title>
-    
-    <!-- Meta -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet">
-	
-	<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
-	<script src="{% static 'js/bootstrap.min.js' %}"></script>
-	<script src="{% static 'assets/fontawesome/js/all.min.js' %}"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ resume.0.name }} — CV</title>
+<meta name="description" content="{{ resume.0.name }} — {{ resume.0.desired_title }}. Full CV, work history and skills.">
+<meta name="theme-color" content="#08090a">
+<link rel="icon" href="{% static 'favicon.ico' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;550;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'studio/studio.css' %}">
+<link rel="stylesheet" href="{% static 'css/cv.css' %}">
+</head>
+<body>
 
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="/" class="brand">Christopher Riewaldt<i>.</i></a>
+    <div class="nav-links">
+      <a href="/#work">Services</a>
+      <a href="/#cases">Results</a>
+      <a href="/#process">Process</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/cv/" class="btn btn-primary nav-btn">CV</a>
+      <a href="/#contact" class="btn btn-primary nav-btn">Hire me</a>
+    </div>
+  </div>
+</nav>
 
-	<link id="theme-style" rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-	<!-- Theme CSS -->  
-	<link id="theme-style" rel="stylesheet" href="{% static 'assets/css/pillar-1.css' %}">
+<header class="cv-header">
+  <div class="wrap cv-top">
+    <div>
+      <div class="pill" style="margin-bottom:16px">Curriculum Vitae</div>
+      <h1 class="cv-name">{{ resume.0.name }}</h1>
+      <div class="cv-title">{{ resume.0.desired_title }}</div>
+      <div class="cv-contact">
+        <a href="mailto:{{ resume.0.email }}">{{ resume.0.email }}</a>
+        <a href="tel:+13478145715">{{ resume.0.phone }}</a>
+        <a href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b"
+           target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/criewaldt" target="_blank" rel="noopener">GitHub</a>
+        <a href="?json">JSON</a>
+      </div>
+    </div>
+    <div class="cv-actions">
+      <a class="btn btn-accent" href="{% url 'resume-pdf' %}" download>Download PDF ↓</a>
+      <a class="btn btn-ghost" href="/#contact">Work with me →</a>
+    </div>
+  </div>
+</header>
 
-	<style>
-		.modal-footer {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 10px;
-		}
+<div class="cv-body">
+  <div class="wrap">
 
-		.modal-footer .btn {
-			margin: 0 5px;
-		}
+    <section class="cv-sec">
+      <h2><b>01</b> &nbsp;— &nbsp;Career Summary</h2>
+      <div class="cv-summary">{{ resume.0.professional_summary.summary_html|safe }}</div>
+    </section>
 
-		/* let the header band grow for the download button */
-		.resume-header {
-			height: auto;
-			min-height: 220px;
-		}
+    <div class="cv-grid">
+      <div>
+        <section class="cv-sec">
+          <h2><b>02</b> &nbsp;— &nbsp;Work Experience</h2>
+          {% for job in resume.0.employment_history.all|sort_by_int:"sort_order" %}
+            <article class="job">
+              <div class="job-head">
+                <span class="job-title">{{ job.job_title }}</span>
+                <span class="job-co">{{ job.company_name }}</span>
+              </div>
+              <div class="job-time">
+                {{ job.start_date|date:"M Y" }} —
+                {% if job.is_current or not job.end_date %}Present
+                {% else %}{{ job.end_date|date:"M Y" }}{% endif %}
+                {% if job.location %} · {{ job.location }}{% endif %}
+              </div>
+              <div class="job-desc">{{ job.description_html|safe }}</div>
+            </article>
+          {% endfor %}
+        </section>
+      </div>
 
-		.resume-header .download-pdf-btn {
-			display: inline-block;
-			background: #fff;
-			color: #434E5E;
-			font-size: 0.875rem;
-			font-weight: 700;
-			letter-spacing: 0.03rem;
-			padding: 0.4rem 0.9rem;
-			border: 0;
-			border-radius: 0.125rem;
-		}
+      <aside>
+        <section class="cv-sec">
+          <h2><b>03</b> &nbsp;— &nbsp;Skills &amp; Tools</h2>
+          {% with items=resume.0.keywords.all|by_category:'web' %}
+            {% if items %}
+              <div class="skill-cat">
+                <h4>Web Development</h4>
+                <ul class="skill-list">
+                  {% for k in items %}<li>{{ k.name }}</li>{% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% with items=resume.0.keywords.all|by_category:'language' %}
+            {% if items %}
+              <div class="skill-cat">
+                <h4>Languages</h4>
+                <ul class="skill-list">
+                  {% for k in items %}<li>{{ k.name }}</li>{% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% with items=resume.0.keywords.all|by_category:'cloud' %}
+            {% if items %}
+              <div class="skill-cat">
+                <h4>Cloud &amp; DevOps</h4>
+                <ul class="skill-list">
+                  {% for k in items %}<li>{{ k.name }}</li>{% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% with items=resume.0.keywords.all|by_category:'ai' %}
+            {% if items %}
+              <div class="skill-cat">
+                <h4>AI &amp; ML</h4>
+                <ul class="skill-list">
+                  {% for k in items %}<li>{{ k.name }}</li>{% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% with items=resume.0.keywords.all|by_category:'methodology' %}
+            {% if items %}
+              <div class="skill-cat">
+                <h4>Methodologies</h4>
+                <ul class="skill-list">
+                  {% for k in items %}<li>{{ k.name }}</li>{% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          {% endwith %}
+        </section>
 
-		.resume-header .download-pdf-btn:hover,
-		.resume-header .download-pdf-btn:focus {
-			background: #e9edf2;
-			color: #2f3742;
-		}
+        <section class="cv-sec">
+          <h2><b>04</b> &nbsp;— &nbsp;Education</h2>
+          {% for edu in resume.0.education.all %}
+            <div class="entry">
+              <div class="entry-name">{{ edu.degree }}</div>
+              <div class="entry-meta">{{ edu.school }}{% if edu.time %} · {{ edu.time }}{% endif %}</div>
+            </div>
+          {% endfor %}
+        </section>
 
-	</style>
+        <section class="cv-sec">
+          <h2><b>05</b> &nbsp;— &nbsp;Licenses &amp; Awards</h2>
+          {% for award in resume.0.awards.all %}
+            <div class="entry">
+              <div class="entry-name">{{ award.name }}</div>
+              {% if award.description %}<div class="entry-desc">{{ award.description }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
 
-</head> 
+<footer>
+  <div class="wrap foot">
+    <div>© <span id="yr">2026</span> {{ resume.0.name }} · New York, NY</div>
+    <div>
+      <a href="/">Services</a> &nbsp;·&nbsp;
+      <a href="{% url 'resume-pdf' %}" download>PDF</a> &nbsp;·&nbsp;
+      <a href="https://github.com/criewaldt" target="_blank" rel="noopener">GitHub</a> &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
 
-<body>	
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  var nav = document.getElementById('nav');
+  addEventListener('scroll', function () { nav.classList.toggle('stuck', scrollY > 8); },
+                   {passive: true});
+</script>
 
-    <article class="resume-wrapper text-center position-relative">
-	    <div class="resume-wrapper-inner mx-auto text-start bg-white shadow-lg">
-		    <header class="resume-header pt-4 pt-md-0">
-			    <div class="row">
-				    <div class="col-block col-md-auto resume-picture-holder text-center text-md-start">
-				        <img class="picture" src="assets/images/profile.jpg" alt="">
-				    </div><!--//col-->
-				    <div class="col">
-					    <div class="row p-4 justify-content-center justify-content-md-between">
-						    <div class="primary-info col-auto">
-							    <h1 class="name mt-0 mb-1 text-white text-uppercase text-uppercase">{{resume.0.name}}</h1>
-							    <div class="title mb-3">{{resume.0.desired_title}}</div>
-							    <ul class="list-unstyled">
-								    <li class="mb-2"><a class="text-link" href="mailto:criewaldt@gmail.com"><i class="far fa-envelope fa-fw me-2" data-fa-transform="grow-3"></i>{{resume.0.email}}</a></li>
-								    <li><a class="text-link" href="tel:+13478145715"><i class="fas fa-mobile-alt fa-fw me-2" data-fa-transform="grow-6"></i>{{resume.0.phone}}</a></li>
-							    </ul>
-						    </div><!--//primary-info-->
-						    <div class="secondary-info col-auto mt-2">
-							    <ul class="resume-social list-unstyled">
-					                <li class="mb-3"><a class="text-link" href="https://www.linkedin.com/in/christopher-riewaldt-a21a531b"><span class="fa-container text-center me-2"><i class="fab fa-linkedin-in fa-fw"></i></span>LinkedIn.com/ChrisRiewaldt</a></li>
-					                <li class="mb-3"><a class="text-link" href="https://github.com/criewaldt"><span class="fa-container text-center me-2"><i class="fab fa-github-alt fa-fw"></i></span>GitHub.com/CRiewaldt</a></li>
-								</ul>
-								<br>
-								<ul class="resume-social list-unstyled">
-									<li class="mb-3"><a class="text-link" href="?json"><span class="fa-container text-center me-2"><i class="fas fa-code fa-fw"></i></span>View as JSON</a></li>
-								</ul>
-								<a class="btn btn-light btn-sm download-pdf-btn" href="{% url 'resume-pdf' %}" download>
-									<i class="fas fa-file-pdf me-2"></i>Download PDF
-								</a>
-						    </div><!--//secondary-info-->
-					    </div><!--//row-->
-					    
-				    </div><!--//col-->
-			    </div><!--//row-->
-		    </header>
-		    <div class="resume-body p-5">
-			    <section class="resume-section summary-section mb-5">
-				    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Career Summary</h2>
-				    <div class="resume-section-content">
-					    <p class="mb-0">{{ resume.0.professional_summary.summary_html|safe }}</p>
-				    </div>
-			    </section><!--//summary-section-->
-			    <div class="row">
-				    <div class="col-lg-9">
-					    <section class="resume-section experience-section mb-5">
-						    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Work Experience</h2>
-						    <div class="resume-section-content">
-							    <div class="resume-timeline position-relative">
-
-									{% load sort_tags %}
-
-									{% for job in resume.0.employment_history.all|sort_by_int:"sort_order" %}
-									
-										<article class="resume-timeline-item position-relative pb-5">
-											
-											<div class="resume-timeline-item-header mb-2">
-												<div class="d-flex flex-column flex-md-row">
-													<h3 class="resume-position-title font-weight-bold mb-1">{{ job.job_title }}</h3>
-													<div class="resume-company-name ms-auto">{{ job.company_name }}</div>
-												</div>
-												<div class="resume-position-time">
-													{{ job.start_date|date:"Y" }} - {{ job.end_date|default:"Present" }}
-												</div>
-											</div><!--//resume-timeline-item-header-->
-											<div class="resume-timeline-item-desc">
-												<p>{{ job.description_html|safe }}</p>
-											</div><!--//resume-timeline-item-desc-->
-
-										</article><!--//resume-timeline-item-->
-									{% endfor %}
-
-							    </div><!--//resume-timeline-->					    
-						    </div>
-					    </section><!--//experience-section-->
-				    </div>
-				    <div class="col-lg-3">
-					    <section class="resume-section skills-section mb-5">
-						    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Skills &amp; Tools</h2>
-						    <div class="resume-section-content">
-						        <div class="resume-skill-item">
-							        <h4 class="resume-skills-cat font-weight-bold">Web Development</h4>
-									<ul class="list-inline">
-										{% for keyword in resume.0.keywords.all %}
-											{% if keyword.category == 'web' %}
-												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
-											{% endif %}
-										{% endfor %}
-						            </ul>
-						        </div><!--//resume-skill-item-->
-						        
-						        <div class="resume-skill-item">
-									<h4 class="resume-skills-cat font-weight-bold">Languages</h4>
-						            <ul class="list-inline">
-										{% for keyword in resume.0.keywords.all %}
-											{% if keyword.category == 'language' %}
-												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
-											{% endif %}
-										{% endfor %}
-						            </ul>
-						        </div><!--//resume-skill-item-->
-						        
-						        <div class="resume-skill-item">
-						            <h4 class="resume-skills-cat font-weight-bold">Cloud &amp; DevOps</h4>
-						            <ul class="list-inline">
-										{% for keyword in resume.0.keywords.all %}
-											{% if keyword.category == 'cloud' %}
-												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
-											{% endif %}
-										{% endfor %}
-						            </ul>
-						        </div><!--//resume-skill-item-->
-
-						        <div class="resume-skill-item">
-						            <h4 class="resume-skills-cat font-weight-bold">AI &amp; ML</h4>
-						            <ul class="list-inline">
-										{% for keyword in resume.0.keywords.all %}
-											{% if keyword.category == 'ai' %}
-												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
-											{% endif %}
-										{% endfor %}
-						            </ul>
-						        </div><!--//resume-skill-item-->
-
-						        <div class="resume-skill-item">
-						            <h4 class="resume-skills-cat font-weight-bold">Methodologies</h4>
-						            <ul class="list-inline">
-										{% for keyword in resume.0.keywords.all %}
-											{% if keyword.category == 'methodology' %}
-												<li class="list-inline-item"><span class="badge badge-light">{{keyword.name}}</span></li>
-											{% endif %}
-										{% endfor %}
-						            </ul>
-						        </div><!--//resume-skill-item-->
-						    </div><!--resume-section-content-->
-					    </section><!--//skills-section-->
-					    <section class="resume-section education-section mb-5">
-						    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Education</h2>
-						    <div class="resume-section-content">
-							    <ul class="list-unstyled">
-									{% for edu in resume.0.education.all %}
-									{{edu}}
-								    <li class="mb-2">
-								        <div class="resume-degree font-weight-bold">{{edu.name}}</div>
-								        <div class="resume-degree-org">{{edu.school}}</div>
-								        <div class="resume-degree-time">{{edu.time}}</div>
-								    </li>
-									{% endfor %}
-								    
-							    </ul>
-						    </div>
-					    </section><!--//education-section-->
-					    <section class="resume-section reference-section mb-5">
-						    <h2 class="resume-section-title text-uppercase font-weight-bold pb-3 mb-3">Licenses & Awards</h2>
-						    <div class="resume-section-content">
-							    <ul class="list-unstyled resume-awards-list">
-									{% for award in resume.0.awards.all %}
-								    <li class="mb-2 ps-4 position-relative">
-								        <i class="resume-award-icon fas fa-trophy position-absolute" data-fa-transform="shrink-2"></i>
-								        <div class="resume-award-name">{{award.name}}</div>
-								        <div class="resume-award-desc">{{award.description}}</div>
-								    </li>
-									{% endfor %}
-								    
-							    </ul>
-						    </div>
-					    
-				    </div>
-			    </div><!--//row-->
-		    </div><!--//resume-body-->
-		    
-		    
-	    </div>
-    </article> 
-
-    
-    <footer class="footer text-center pt-2 pb-5">
-        <small class="copyright">ChrisRiewaldt.com | 2026</small>
-    </footer>
-
-
-	<!-- Message Modal -->
-	<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalTitle" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="successModalLongTitle">Success!</h5>
-					
-				</div>
-				<div class="modal-body">
-					<strong>Success!</strong> Please check: <strong id="sentEmail"></strong>
-				</div>
-				<div class="modal-footer">
-					<div class="button-group">
-						<button type="button" class="btn btn-secondary m-1" data-dismiss="modal">Done</button>
-						
-					</div>
-				</div>
-				
-			</div>
-		</div>
-	</div>
-
-	<!-- Error Modal -->
-	<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="errorModalLabel">Error!</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<strong>Oops! Something went wrong.</strong> Please try again with different values.
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="submitEmailForm()">Retry</button>
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Email The Modal -->
-	<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="emailModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-			<h5 class="modal-title" id="emailModalLabel">Download via Celery Task Email</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
-			</div>
-			<div class="modal-body">
-			<!-- Form -->
-			<form id="emailForm">
-				{% csrf_token %}
-				<div class="form-group">
-					<p>Enter your email, two integers, and a delay time in seconds: Celery will provide the sum(n1, n2) and a link to my CV.</p>
-				<label for="email">Email address</label>
-				<input type="email" class="form-control" id="email" name="email" required>
-				</div>
-				<div class="form-group">
-				<label for="num1">Number 1</label>
-				<input type="number" class="form-control" id="num1" name="num1" required>
-				</div>
-				<div class="form-group">
-				<label for="num2">Number 2</label>
-				<input type="number" class="form-control" id="num2" name="num2" required>
-				</div>
-				<div class="form-group">
-				<label for="num1">Email Delay Time (seconds: max 60)</label>
-				<input type="number" class="form-control" id="delay" name="delay" required>
-				</div>
-			</form>
-			</div>
-			<div class="modal-footer">
-			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			<button type="button" class="btn btn-primary" onclick="submitEmailForm()">Send Email</button>
-			</div>
-		</div>
-		</div>
-	</div>
-
-
-
-	<script type="text/javascript">
-		$(document).ready(function() {
-
-
-
-		
-		
-
-
-
-
-
-		
-	</script>
-
-	<script>
-		// REST
-		function submitEmailForm() {
-			const form = document.getElementById('emailForm');
-			const formData = new FormData(form);
-
-			fetch('/send-email/', {
-				method: 'POST',
-				body: formData  // FormData will include the CSRF token
-			})
-			.then(response => {
-				if(response.ok) {
-				return response.json();
-				}
-				throw new Error('Network response was not ok.');
-			})
-			.then(data => {
-				console.log('Success:', data);
-				$('#emailModal').modal('hide'); // Hide the modal on success
-				$('#sentEmail').html(formData.get('email'));
-				$('#successModal').modal('show');
-			})
-			.catch((error) => {
-				console.error('Error:', error);
-			});
-			}
-	</script>
-
-	
-
-    
-
+<script>
+addEventListener('load', function () {
+  var vw = document.documentElement.clientWidth;
+  var issues = [];
+  var de = document.documentElement;
+  if (de.scrollWidth > vw + 1)
+    issues.push('PAGE OVERFLOW scrollWidth=' + de.scrollWidth + ' vw=' + vw);
+  document.querySelectorAll('body *').forEach(function (el) {
+    var r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) return;
+    var cs = getComputedStyle(el);
+    if (cs.position === 'fixed') return;
+    var right = r.right, left = r.left;
+    if (right > vw + 1.5 && cs.overflowX !== 'auto' && cs.overflowX !== 'hidden'
+        && cs.overflowX !== 'scroll' && !el.closest('.marquee')) {
+      issues.push('OVERFLOW <' + el.tagName.toLowerCase() + '.' +
+        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
+        '> right=' + Math.round(right) + ' (vw ' + vw + ')');
+    }
+    if (left < -1.5 && !el.closest('.marquee') && !el.closest('.hp')) {
+      issues.push('NEGATIVE-LEFT <' + el.tagName.toLowerCase() + '.' +
+        (typeof el.className === 'string' ? el.className.split(' ')[0] : '') +
+        '> left=' + Math.round(left));
+    }
+  });
+  // Text that has been squeezed to an unreadable column
+  document.querySelectorAll('p, li, h1, h2, h3').forEach(function (el) {
+    var r = el.getBoundingClientRect();
+    if (r.width > 0 && r.width < 90 && el.textContent.trim().length > 12)
+      issues.push('NARROW <' + el.tagName.toLowerCase() + '> w=' + Math.round(r.width) +
+                  ' "' + el.textContent.trim().slice(0,26) + '"');
+  });
+  var d = document.createElement('pre'); d.id = 'probe';
+  d.textContent = 'VW=' + vw + ' H=' + de.scrollHeight + ' ISSUES=' + issues.length +
+                  (issues.length ? '\n' + issues.slice(0,14).join('\n') : ' — clean');
+  document.body.appendChild(d);
+});
+</script>
 </body>
-</html> 
-
+</html>

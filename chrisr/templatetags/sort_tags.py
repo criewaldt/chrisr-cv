@@ -24,3 +24,13 @@ def sort_by_int(queryset, order_by):
 
     # Assuming the order_by field is an integer field
     return sorted(queryset, key=lambda obj: getattr(obj, order_by, 0))
+
+@register.filter
+def by_category(keywords, category):
+    """Keywords in one category, case-insensitively.
+
+    Keeps the CV template to one short block per skill group instead of five
+    near-identical loops each re-scanning every keyword.
+    """
+    wanted = (category or '').strip().lower()
+    return [k for k in keywords if (k.category or '').strip().lower() == wanted]
