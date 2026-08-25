@@ -113,8 +113,11 @@ def send_digest(slot, to=None, now=None, dry_run=False):
     if dry_run:
         return record, body
 
-    recipient = to or getattr(settings, 'JOBS_DIGEST_TO', '') or settings.EMAIL_HOST_USER
-    sender = settings.EMAIL_HOST_USER or recipient
+    recipient = to or getattr(settings, 'JOBS_DIGEST_TO', '') or getattr(
+        settings, 'CONTACT_INBOX', '')
+    # DEFAULT_FROM_EMAIL is the verified sending identity (Postmark signature or
+    # Gmail account); the recipient is a real inbox. They are not the same thing.
+    sender = settings.DEFAULT_FROM_EMAIL
     if not recipient:
         # Without this the send is handed [None] and fails deep inside smtplib with
         # nothing pointing at the actual cause.

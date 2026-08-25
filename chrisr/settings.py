@@ -32,11 +32,18 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-    # Heroku terminates TLS at the router and forwards over HTTP, so Django sees an
-    # insecure request. Without this header mapping, SECURE_SSL_REDIRECT below would
-    # redirect forever. These two must always be set together.
+    # Heroku terminates TLS and forwards over HTTP, so Django sees an insecure
+    # request unless this header is trusted.
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+
+    # OFF by default, deliberately. Cloudflare sits in front of this site, and when
+    # its SSL/TLS mode is "Flexible" it fetches the origin over plain HTTP. Django
+    # then sees X-Forwarded-Proto: http, redirects to HTTPS, Cloudflare fetches over
+    # HTTP again -- an infinite loop that takes the whole site down. Cloudflare's
+    # "Always Use HTTPS" already performs this redirect at the edge, which is the
+    # right place for it. Only turn this on if Cloudflare is set to Full/Full-strict
+    # and you want defence in depth.
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
 
     # HSTS is deliberately short to start with. A long max-age is effectively
     # irreversible -- browsers refuse plain HTTP for the full duration, so a broken
@@ -75,6 +82,8 @@ INSTALLED_APPS = [
     'bonnaroo',
     'jobs',
     'studio',
+
+    'anymail',
 
     'rest_framework',
     'django_celery_results',
@@ -203,12 +212,39 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 from chrisr.settings import TIME_ZONE
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# --- email -----------------------------------------------------------------
+# Postmark when a server token is present, Gmail SMTP otherwise, console in local
+# development. Postmark is preferred for anything transactional: Gmail throttles
+# around 500 messages a day and will restrict the account past that, and an SMTP
+# timeout fails silently -- which for a contact form means a lost sales lead with
+# no trace. Anymail raises a real exception instead.
+POSTMARK_SERVER_TOKEN = os.environ.get('POSTMARK_SERVER_TOKEN', '')
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ.get('GMAIL_USER', None)
 EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PW', None)
+
+if POSTMARK_SERVER_TOKEN:
+    EMAIL_BACKEND = 'anymail.backends.postmark.EmailBackend'
+    ANYMAIL = {
+        'POSTMARK_SERVER_TOKEN': POSTMARK_SERVER_TOKEN,
+        # Fail loudly on a bad recipient rather than reporting success.
+        'IGNORE_UNSUPPORTED_FEATURES': False,
+    }
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = os.environ.get(
+        'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+
+# The From address must be one Postmark has verified -- a Sender Signature or, far
+# better, an address on a domain you have verified with DKIM. Sending as
+# @gmail.com through a third party fails DMARC alignment and lands in spam.
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@chrisriewaldt.com')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 #CELERY/REDIS
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', None)
@@ -225,6 +261,9 @@ CELERY_CACHE_BACKEND = 'django-cache'
 # Tier 1 triage is high-volume classification; tier 2 tailoring produces the
 # document Chris actually submits. Spend accordingly. Both are overridable by
 # env var so either stage can be re-pointed without a code change.
+# Where enquiries and digests land, independent of who sends them.
+CONTACT_INBOX = os.environ.get('CONTACT_INBOX', 'criewaldt@gmail.com')
+
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 JOBS_TRIAGE_MODEL = os.environ.get('JOBS_TRIAGE_MODEL', 'claude-haiku-4-5')
 JOBS_TAILOR_MODEL = os.environ.get('JOBS_TAILOR_MODEL', 'claude-opus-5')
@@ -233,11 +272,11 @@ JOBS_TAILOR_EFFORT = os.environ.get('JOBS_TAILOR_EFFORT', 'medium')
 
 # Where digests go, and the base URL their deep links point at. Falls back to the
 # Gmail sender so a missing config var still reaches an inbox rather than nowhere.
-JOBS_DIGEST_TO = os.environ.get('JOBS_DIGEST_TO', '') or EMAIL_HOST_USER
+JOBS_DIGEST_TO = os.environ.get('JOBS_DIGEST_TO', '') or CONTACT_INBOX
 JOBS_SITE_URL = os.environ.get('JOBS_SITE_URL', 'https://chrisriewaldt.com').rstrip('/')
 
 # --- studio (services page) ----------------------------------------------
 # The "Book a call" button renders only when a scheduling URL is configured, so
 # the page never ships a button pointing at nothing.
 STUDIO_CALENDAR_URL = os.environ.get('STUDIO_CALENDAR_URL', '')
-STUDIO_NOTIFY_TO = os.environ.get('STUDIO_NOTIFY_TO', '') or EMAIL_HOST_USER
+STUDIO_NOTIFY_TO = os.environ.get('STUDIO_NOTIFY_TO', '') or CONTACT_INBOX

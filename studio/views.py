@@ -99,26 +99,39 @@ def landing(request):
 
 
 def _notify(enquiry):
-    to = getattr(settings, 'STUDIO_NOTIFY_TO', '') or settings.EMAIL_HOST_USER
+    """Email the enquiry. Raises on failure -- the caller logs and moves on.
+
+    The enquiry row is already committed by the time this runs, so a delivery
+    failure costs the notification, never the lead itself.
+    """
+    to = getattr(settings, 'STUDIO_NOTIFY_TO', '') or settings.CONTACT_INBOX
     if not to:
-        logger.warning('studio: no STUDIO_NOTIFY_TO or GMAIL_USER; enquiry %s not emailed',
-                       enquiry.pk)
+        logger.error('studio: no STUDIO_NOTIFY_TO or CONTACT_INBOX; enquiry %s '
+                     'saved but not emailed', enquiry.pk)
         return
 
-    body = '\n'.join([
+    lines = [
         f'{enquiry.name}' + (f' — {enquiry.company}' if enquiry.company else ''),
-        f'{enquiry.email}',
+        enquiry.email,
         '',
         f'Budget:   {enquiry.budget_label}',
         f'Timeline: {enquiry.timeline_label}',
         '',
         enquiry.message,
         '',
-        f'(source: {enquiry.source or "direct"})',
-    ])
-    subject = f'New enquiry — {enquiry.name}' + (f' at {enquiry.company}' if enquiry.company else '')
+        f'(source: {enquiry.source or "direct"} · {enquiry.created_at:%b %d %H:%M})',
+    ]
+    subject = f'New enquiry — {enquiry.name}' + (f' at {enquiry.company}'
+                                                 if enquiry.company else '')
     message = EmailMultiAlternatives(
-        subject, body, settings.EMAIL_HOST_USER or to, [to],
-        reply_to=[enquiry.email],   # replying goes straight to the prospect
+        subject,
+        '\n'.join(lines),
+        settings.DEFAULT_FROM_EMAIL,   # must be a Postmark-verified sender
+        [to],
+        reply_to=[enquiry.email],      # hitting reply goes straight to the prospect
     )
-    message.send()
+    # Postmark groups by tag in its dashboard; harmless on other backends.
+    if 'postmark' in settings.EMAIL_BACKEND:
+        message.tags = ['contact-form']
+    message.send(fail_silently=False)
+    logger.info('studio: enquiry %s emailed to %s', enquiry.pk, to)

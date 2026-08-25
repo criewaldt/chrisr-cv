@@ -14,6 +14,7 @@ click==8.4.1
 cryptography==48.0.0
 defusedxml==0.7.1
 dj-database-url==3.1.2
+django-anymail[postmark]==15.1
 django-cockroachdb==6.0
 django-filter==23.5
 Django==6.0.5
